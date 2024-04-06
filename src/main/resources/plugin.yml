@@ -1,0 +1,9 @@
+name: SMPClaim
+version: 1.0
+api-version: 1.20
+author: EinfachGustaf.live
+main: live.einfachgustaf.smpclaim.SMPClaim
+depend:
+  - WorldGuard
+libraries:
+  - "net.axay:kspigot:1.20.3"
