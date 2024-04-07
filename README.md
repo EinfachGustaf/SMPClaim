@@ -2,15 +2,15 @@
 A simple chunk claim system for SMP's used on the **EinfachGustaf.live SMP**.
 
 ## Install
-- Download the latest version of the plugin. **You need [WorldGuard](https://enginehub.org/worldguard) as a dependency!**
+- Download the latest version of the plugin. **You need [WorldGuard](https://enginehub.org/worldguard) and [WorldEdit](https://modrinth.com/plugin/worldedit) as a dependency!**
 - Drag the plugin into the `plugins/` folder!
 - Enter your database credentials into the config file
 - You are good to go!
 
 ## Supported database types
-| Database  | Supported |
-| --------- | --------- |
-| PosgreSQL | 🟢       |
+| Database   | Supported |
+| ---------- | --------- |
+| PostgreSQL | 🟢       |
 
 ## Usage
 | Command      | Description                                             |
