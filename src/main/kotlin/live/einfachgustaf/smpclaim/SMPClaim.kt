@@ -7,6 +7,7 @@ import live.einfachgustaf.smpclaim.listeners.Listeners
 import live.einfachgustaf.smpclaim.utils.Config
 import live.einfachgustaf.smpclaim.utils.WorldGuardApi
 import live.einfachgustaf.smpclaim.utils.configs.DBConfig
+import live.einfachgustaf.smpclaim.utils.configs.ListenerConfig
 import net.axay.kspigot.main.KSpigot
 import org.bukkit.Bukkit
 
@@ -17,6 +18,7 @@ class SMPClaim : KSpigot() {
         lateinit var worldGuardApi: WorldGuardApi; private set
         lateinit var dataHandler: IDataHandler; private set
         lateinit var dbConfig: Config; private set
+        lateinit var listenerConfig: Config; private set
         private var canEnable: Boolean = true
     }
 
@@ -49,7 +51,13 @@ class SMPClaim : KSpigot() {
             Bukkit.getPluginManager().disablePlugin(this)
             return
         }
+
+        // ### Listeners ### //
+        listenerConfig = ListenerConfig()
+        listenerConfig.init()
         Listeners().registerListeners()
+
+        // ### Commands ### //
         ClaimCommand().register()
     }
 

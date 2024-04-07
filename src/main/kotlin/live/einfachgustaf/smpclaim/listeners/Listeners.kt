@@ -16,33 +16,31 @@ import org.bukkit.event.vehicle.VehicleEntityCollisionEvent
 import java.util.*
 
 class Listeners {
-
-    // --- STATIC SHIT THAT SHOULD BE A CONFIG --- //
-    // TODO: Move this to a config
-    private val msg = "Das kannst du hier nicht machen."
-    private val canEntityInteraction = false
-    private val canEntityDamage = false
-    private val canCreatureSpawn = false
-    private val canVehicleEntityCollision = false
-    private val canBlockBreak = false
-    private val canChangeBlock = false
-    private val canBlockPlace = false
-    private val canPlayerInteract = false
-    private val canProjectileLaunch = false
-    private val canHangingBreakByEntity = false
-    private val canHangingPlace = false
-    private val canPlayerBucketFill = false
-    private val canPlayerBucketEmpty = false
-    private val canPlayerBucketEntity = false
-    private val canPlayerLeashEntity = false
-    private val canPlayerUnleashEntity = false
-    private val canPlayerArmorStandManipulate = false
-    private val canBlockExplode = false
-    private val canEntityExplode = false
-    private val canBlockSpread = false
-    private val canBlockPistonExtendEvent = false
-    private val canBlockPistonRetractEvent = false
-    private val canBlockFertilize = false
+    
+    private val msg = SMPClaim.listenerConfig.config.getString("message") ?: "§cDas kannst du hier nicht machen."
+    private val canEntityInteraction = SMPClaim.listenerConfig.config.getBoolean("canEntityInteraction")
+    private val canEntityDamage = SMPClaim.listenerConfig.config.getBoolean("canEntityDamage")
+    private val canCreatureSpawn = SMPClaim.listenerConfig.config.getBoolean("canCreatureSpawn")
+    private val canVehicleEntityCollision = SMPClaim.listenerConfig.config.getBoolean("canVehicleEntityCollision")
+    private val canBlockBreak = SMPClaim.listenerConfig.config.getBoolean("canBlockBreak")
+    private val canChangeBlock = SMPClaim.listenerConfig.config.getBoolean("canChangeBlock")
+    private val canBlockPlace = SMPClaim.listenerConfig.config.getBoolean("canBlockPlace")
+    private val canPlayerInteract = SMPClaim.listenerConfig.config.getBoolean("canPlayerInteract")
+    private val canProjectileLaunch = SMPClaim.listenerConfig.config.getBoolean("canProjectileLaunch")
+    private val canHangingBreakByEntity = SMPClaim.listenerConfig.config.getBoolean("canHangingBreakByEntity")
+    private val canHangingPlace = SMPClaim.listenerConfig.config.getBoolean("canHangingPlace")
+    private val canPlayerBucketFill = SMPClaim.listenerConfig.config.getBoolean("canPlayerBucketFill")
+    private val canPlayerBucketEmpty = SMPClaim.listenerConfig.config.getBoolean("canPlayerBucketEmpty")
+    private val canPlayerBucketEntity = SMPClaim.listenerConfig.config.getBoolean("canPlayerBucketEntity")
+    private val canPlayerLeashEntity = SMPClaim.listenerConfig.config.getBoolean("canPlayerLeashEntity")
+    private val canPlayerUnleashEntity = SMPClaim.listenerConfig.config.getBoolean("canPlayerUnleashEntity")
+    private val canPlayerArmorStandManipulate = SMPClaim.listenerConfig.config.getBoolean("canPlayerArmorStandManipulate")
+    private val canBlockExplode = SMPClaim.listenerConfig.config.getBoolean("canBlockExplode")
+    private val canEntityExplode = SMPClaim.listenerConfig.config.getBoolean("canEntityExplode")
+    private val canBlockSpread = SMPClaim.listenerConfig.config.getBoolean("canBlockSpread")
+    private val canBlockPistonExtend = SMPClaim.listenerConfig.config.getBoolean("canBlockPistonExtend")
+    private val canBlockPistonRetract = SMPClaim.listenerConfig.config.getBoolean("canBlockPistonRetract")
+    private val canBlockFertilize = SMPClaim.listenerConfig.config.getBoolean("canBlockFertilize")
 
 
     fun registerListeners() {
@@ -247,7 +245,7 @@ class Listeners {
          */
         listen<BlockPistonExtendEvent> {
             // Return if the event should not be cancelled
-            if (!check(it, canBlockPistonExtendEvent, ChunkPosition(it.block.chunk))) return@listen
+            if (!check(it, canBlockPistonExtend, ChunkPosition(it.block.chunk))) return@listen
             it.isCancelled = true
         }
 
@@ -256,7 +254,7 @@ class Listeners {
          */
         listen<BlockPistonRetractEvent> {
             // Return if the event should not be cancelled
-            if (!check(it, canBlockPistonRetractEvent, ChunkPosition(it.block.chunk))) return@listen
+            if (!check(it, canBlockPistonRetract, ChunkPosition(it.block.chunk))) return@listen
             it.isCancelled = true
         }
 
