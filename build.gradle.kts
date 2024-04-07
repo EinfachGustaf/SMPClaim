@@ -21,7 +21,7 @@ dependencies {
     paperweight.paperDevBundle("1.20.4-R0.1-SNAPSHOT")
 
     // KSpigot
-    implementation("net.axay:kspigot:1.20.3")
+    compileOnly("net.axay:kspigot:1.20.3")
 
     // WorldGuard
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.9")
