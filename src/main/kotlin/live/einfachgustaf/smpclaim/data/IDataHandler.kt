@@ -73,4 +73,19 @@ interface IDataHandler {
      */
     fun getChunkOwner(pos: ChunkPosition): UUID?
 
+    /**
+     * Add access to a claimed chunk for a player.
+     */
+    fun addChunkAccess(pos: ChunkPosition, player: UUID)
+
+    /**
+     * Remove access to a claimed chunk for a player.
+     */
+    fun removeChunkAccess(pos: ChunkPosition, player: UUID)
+
+    /**
+     * Check if a player has access to a claimed chunk or is its owner.
+     */
+    fun hasAccessOrIsOwner(player: UUID, chunk: ChunkPosition): Boolean
+
 }
