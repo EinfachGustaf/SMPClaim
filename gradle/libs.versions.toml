@@ -1,0 +1,20 @@
+[versions]
+kspigot = "1.20.3"
+worldguard = "7.0.9"
+postgresql = "42.7.3"
+exposed = "0.35.1"
+paperDevBundle = "1.20.4-R0.1-SNAPSHOT"
+
+[libraries]
+kspigot = { group = "net.axay", name = "kspigot", version.ref = "kspigot" }
+worldguard = { group = "com.sk89q.worldguard", name = "worldguard-bukkit", version.ref = "worldguard" }
+postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
+exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
+exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
+exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
+
+[plugins]
+shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
+
+[bundles]
+exposed = ["exposed-core", "exposed-dao", "exposed-jdbc"]

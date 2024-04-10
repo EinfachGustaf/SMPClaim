@@ -18,21 +18,19 @@ repositories {
 dependencies {
 
     // Paper
-    paperweight.paperDevBundle("1.20.4-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle(libs.versions.paperDevBundle)
 
     // KSpigot
-    compileOnly("net.axay:kspigot:1.20.3")
+    compileOnly(libs.kspigot)
 
     // WorldGuard
-    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.9")
+    compileOnly(libs.worldguard)
 
     // Database Drivers
-    implementation("org.postgresql:postgresql:42.7.3")
+    implementation(libs.postgresql)
 
     // Exposed
-    implementation("org.jetbrains.exposed:exposed-core:0.35.1")
-    implementation("org.jetbrains.exposed:exposed-dao:0.35.1")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.35.1")
+    implementation(libs.bundles.exposed)
 }
 
 tasks.test {
