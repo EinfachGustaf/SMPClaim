@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "live.einfachgustaf"
-version = "1.0-RC1"
+version = "1.0"
 
 repositories {
     mavenCentral()
