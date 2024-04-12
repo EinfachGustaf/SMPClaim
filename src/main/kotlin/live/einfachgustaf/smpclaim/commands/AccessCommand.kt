@@ -9,7 +9,7 @@ import net.axay.kspigot.commands.literal
 import net.axay.kspigot.commands.runs
 import org.bukkit.Bukkit
 
-class AccessCommand {
+object AccessCommand {
 
     fun register() {
         command("access") {
