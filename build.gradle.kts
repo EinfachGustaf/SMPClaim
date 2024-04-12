@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm") version "1.9.23"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("io.papermc.paperweight.userdev") version "1.5.11"
     id("xyz.jpenilla.run-paper") version "2.2.3"
 }
@@ -27,10 +26,10 @@ dependencies {
     compileOnly(libs.worldguard)
 
     // Database Drivers
-    implementation(libs.postgresql)
+    compileOnly(libs.postgresql)
 
     // Exposed
-    implementation(libs.bundles.exposed)
+    compileOnly(libs.bundles.exposed)
 }
 
 tasks.test {
