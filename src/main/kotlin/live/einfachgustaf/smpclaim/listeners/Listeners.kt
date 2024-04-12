@@ -273,7 +273,7 @@ class Listeners {
     // --- HELPER METHODS --- //
 
     private fun isOwnerOrHasAccess(player: UUID, chunk: ChunkPosition): Boolean {
-        return SMPClaim.dataHandler.isChunkClaimed(chunk) && SMPClaim.dataHandler.getChunkOwner(chunk) == player
+        return SMPClaim.dataHandler.isChunkClaimed(chunk) && SMPClaim.dataHandler.hasAccessOrIsOwner(player, chunk)
     }
 
     /**

@@ -5,7 +5,7 @@ import live.einfachgustaf.smpclaim.chunk.ChunkPosition
 import net.axay.kspigot.commands.command
 import net.axay.kspigot.commands.runs
 
-class ClaimCommand {
+object ClaimCommand {
 
     fun register() {
         command("claim") {

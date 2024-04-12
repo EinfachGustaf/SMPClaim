@@ -2,6 +2,7 @@ package live.einfachgustaf.smpclaim.data
 
 import live.einfachgustaf.smpclaim.SMPClaim
 import live.einfachgustaf.smpclaim.chunk.ChunkPosition
+import live.einfachgustaf.smpclaim.data.exposed.dao.ChunkAccess
 import live.einfachgustaf.smpclaim.data.exposed.dao.ClaimedChunks
 import org.bukkit.Bukkit
 import org.jetbrains.exposed.sql.*
@@ -28,6 +29,7 @@ class PostgresDataHandler : IDataHandler {
         transaction {
             try {
                 SchemaUtils.createMissingTablesAndColumns(ClaimedChunks)
+                SchemaUtils.createMissingTablesAndColumns(ChunkAccess)
             } catch (e: Exception) {
                 throw Exception("Error while creating tables: ${e.message}")
             }
@@ -105,6 +107,13 @@ class PostgresDataHandler : IDataHandler {
      */
     override fun removeClaimedChunk(pos: ChunkPosition) {
         transaction {
+            ChunkAccess.deleteWhere { ChunkAccess.chunk.eq(
+                ClaimedChunks.select {
+                    ClaimedChunks.world.eq(pos.world)
+                        .and(ClaimedChunks.x.eq(pos.x))
+                        .and(ClaimedChunks.z.eq(pos.z))
+                }.single()[ClaimedChunks.id]
+            ) }
             ClaimedChunks.deleteWhere {
                 ClaimedChunks.world.eq(pos.world)
                     .and(ClaimedChunks.x.eq(pos.x))
@@ -136,12 +145,81 @@ class PostgresDataHandler : IDataHandler {
      * @return The UUID of the player who owns the chunk, or `null` if the chunk is not claimed.
      */
     override fun getChunkOwner(pos: ChunkPosition): UUID? {
+        if (!isChunkClaimed(pos)) return null
         return transaction {
             ClaimedChunks.select {
                 ClaimedChunks.world.eq(pos.world)
                     .and(ClaimedChunks.x.eq(pos.x))
                     .and(ClaimedChunks.z.eq(pos.z))
             }.singleOrNull()?.get(ClaimedChunks.owner)
+        }
+    }
+
+    /**
+     * Add access to a claimed chunk for a player.
+     */
+    override fun addChunkAccess(pos: ChunkPosition, player: UUID) {
+        return transaction {
+            ChunkAccess.insert {
+                it[chunk] = ClaimedChunks.select {
+                    ClaimedChunks.world.eq(pos.world)
+                        .and(ClaimedChunks.x.eq(pos.x))
+                        .and(ClaimedChunks.z.eq(pos.z))
+                }.single()[ClaimedChunks.id]
+                it[uuid] = player
+            }
+        }
+    }
+
+    /**
+     * Remove access to a claimed chunk for a player.
+     */
+    override fun removeChunkAccess(pos: ChunkPosition, player: UUID) {
+        return transaction {
+            ChunkAccess.deleteWhere {
+                ChunkAccess.chunk.eq(
+                    ClaimedChunks.select {
+                        ClaimedChunks.world.eq(pos.world)
+                            .and(ClaimedChunks.x.eq(pos.x))
+                            .and(ClaimedChunks.z.eq(pos.z))
+                    }.single()[ClaimedChunks.id]
+                ).and(ChunkAccess.uuid.eq(player))
+            }
+        }
+    }
+
+    /**
+     * Check if a player has access to a claimed chunk or is its owner.
+     */
+    override fun hasAccessOrIsOwner(player: UUID, chunk: ChunkPosition): Boolean {
+        if (getChunkOwner(chunk) == player) return true
+        return transaction {
+            ChunkAccess.select {
+                ChunkAccess.chunk.eq(
+                    ClaimedChunks.select {
+                        ClaimedChunks.world.eq(chunk.world)
+                            .and(ClaimedChunks.x.eq(chunk.x))
+                            .and(ClaimedChunks.z.eq(chunk.z))
+                    }.single()[ClaimedChunks.id]
+                ).and(ChunkAccess.uuid.eq(player))
+            }.count() > 0
+        }
+    }
+
+    /**
+     * Get all players who have access to a claimed chunk.
+     */
+    override fun getChunkAccess(chunk: ChunkPosition): List<UUID> {
+        return transaction {
+            ChunkAccess.select {
+                ChunkAccess.chunk.eq(
+                    ClaimedChunks.select {
+                        ClaimedChunks.world.eq(chunk.world)
+                            .and(ClaimedChunks.x.eq(chunk.x))
+                            .and(ClaimedChunks.z.eq(chunk.z))
+                    }.single()[ClaimedChunks.id]
+                )
+            }.map { it[ChunkAccess.uuid] }
         }
     }
 }
