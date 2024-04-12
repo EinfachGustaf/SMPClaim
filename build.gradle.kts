@@ -44,6 +44,10 @@ tasks {
             url("https://dev.bukkit.org/projects/worldguard/files/latest") // WorldGuard
         }
     }
+
+    withType<Jar> {
+        archiveFileName.set("smpclaim-$version.jar")
+    }
 }
 
 kotlin {

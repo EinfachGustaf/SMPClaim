@@ -25,7 +25,7 @@ pipeline {
       }
       steps {
         sh 'chmod +x gradlew'
-        sh './gradlew build --stacktrace --warning-mode=fail'
+        sh './gradlew clean build --stacktrace --warning-mode=fail'
         archiveArtifacts artifacts: '**/build/libs/*.jar', fingerprint: true
         //discordSend description: "Jenkins Pipeline Build", footer: "Jenkins @ EinfachGustaf.live", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "${DISCORD_WEBHOOK_URL}"
       }
