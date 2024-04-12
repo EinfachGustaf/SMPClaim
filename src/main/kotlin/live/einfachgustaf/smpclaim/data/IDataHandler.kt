@@ -88,4 +88,9 @@ interface IDataHandler {
      */
     fun hasAccessOrIsOwner(player: UUID, chunk: ChunkPosition): Boolean
 
+    /**
+     * Get all players who have access to a claimed chunk.
+     */
+    fun getChunkAccess(chunk: ChunkPosition): List<UUID>
+
 }

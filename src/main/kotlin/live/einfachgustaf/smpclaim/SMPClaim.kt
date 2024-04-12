@@ -1,6 +1,7 @@
 package live.einfachgustaf.smpclaim
 
 import live.einfachgustaf.smpclaim.commands.AccessCommand
+import live.einfachgustaf.smpclaim.commands.ChunkInfoCommand
 import live.einfachgustaf.smpclaim.commands.ClaimCommand
 import live.einfachgustaf.smpclaim.commands.UnclaimCommand
 import live.einfachgustaf.smpclaim.data.IDataHandler
@@ -60,9 +61,10 @@ class SMPClaim : KSpigot() {
         Listeners().registerListeners()
 
         // ### Commands ### //
-        AccessCommand().register()
-        ClaimCommand().register()
-        UnclaimCommand().register()
+        AccessCommand.register()
+        ClaimCommand.register()
+        UnclaimCommand.register()
+        ChunkInfoCommand.register()
     }
 
     override fun shutdown() {

@@ -205,4 +205,21 @@ class PostgresDataHandler : IDataHandler {
             }.count() > 0
         }
     }
+
+    /**
+     * Get all players who have access to a claimed chunk.
+     */
+    override fun getChunkAccess(chunk: ChunkPosition): List<UUID> {
+        return transaction {
+            ChunkAccess.select {
+                ChunkAccess.chunk.eq(
+                    ClaimedChunks.select {
+                        ClaimedChunks.world.eq(chunk.world)
+                            .and(ClaimedChunks.x.eq(chunk.x))
+                            .and(ClaimedChunks.z.eq(chunk.z))
+                    }.single()[ClaimedChunks.id]
+                )
+            }.map { it[ChunkAccess.uuid] }
+        }
+    }
 }
