@@ -3,6 +3,10 @@ version: 1.0-RC1
 api-version: 1.20
 author: EinfachGustaf.live
 main: live.einfachgustaf.smpclaim.SMPClaim
+website: https://modrinth.com/plugin/smpclaim
+database: true
+description: A SMP claim plugin for Paper used by the EinfachGustaf.live SMP
+prefix: SMPClaim
 depend:
   - WorldGuard
 libraries:
