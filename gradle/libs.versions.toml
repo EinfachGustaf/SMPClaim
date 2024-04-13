@@ -13,8 +13,5 @@ exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version
 exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
 exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
 
-[plugins]
-shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
-
 [bundles]
 exposed = ["exposed-core", "exposed-dao", "exposed-jdbc"]
