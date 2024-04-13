@@ -11,21 +11,19 @@ object ChunkInfoCommand {
     fun register() {
         command("cinfo") {
             runs {
-                if (this.sender.isPlayer) {
-                    val chunk = ChunkPosition(this.player.chunk)
-                    val owner = SMPClaim.dataHandler.getChunkOwner(chunk)
-                    val ownerString = if (owner != null) UUIDFetcher.getName(owner) else "-/-"
-                    val access = SMPClaim.dataHandler.getChunkAccess(chunk)
-                    this.player.sendMessage("Chunk Info:")
-                    this.player.sendMessage("Owner: $ownerString")
-                    this.player.sendMessage("Access:")
-                    if (access.isEmpty()) {
-                        this.player.sendMessage("-/-")
-                        return@runs
-                    }
-                    access.forEach {
-                        this.player.sendMessage("- ${UUIDFetcher.getName(it) ?: it}")
-                    }
+                val chunk = ChunkPosition(this.player.chunk)
+                val owner = SMPClaim.dataHandler.getChunkOwner(chunk)
+                val ownerString = if (owner != null) UUIDFetcher.getName(owner) else "-/-"
+                val access = SMPClaim.dataHandler.getChunkAccess(chunk)
+                this.player.sendMessage("Chunk Info:")
+                this.player.sendMessage("Owner: $ownerString")
+                this.player.sendMessage("Access:")
+                if (access.isEmpty()) {
+                    this.player.sendMessage("-/-")
+                    return@runs
+                }
+                access.forEach {
+                    this.player.sendMessage("- ${UUIDFetcher.getName(it) ?: it}")
                 }
             }
         }
