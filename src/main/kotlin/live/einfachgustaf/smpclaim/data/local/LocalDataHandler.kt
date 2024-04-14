@@ -73,7 +73,7 @@ class LocalDataHandler: IDataHandler {
     }
 
     override fun hasAccessOrIsOwner(player: UUID, chunk: ChunkPosition): Boolean {
-        val query = chunkCache[chunk.toPair()]?: return false
+        val query = chunkCache[chunk.toPair()] ?: return false
 
         if (query.owner == player) return true
         if (query.access.contains(player)) return true

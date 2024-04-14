@@ -32,13 +32,13 @@ class SMPClaim : KSpigot() {
         // ### Database ### //
         dbConfig = DBConfig()
         dbConfig.init()
-        if (dbConfig.config.getString("type") == "postgres")
-            dataHandler = PostgresDataHandler()
-        else if (dbConfig.config.getString("type") == "local")
-            dataHandler = LocalDataHandler()
-        else {
-            logger.severe("Unsupported database type: ${dbConfig.config.getString("type")}. Disabling Plugin!")
-            canEnable = false
+        when (dbConfig.config.getString("type")) {
+            "postgres" -> dataHandler = PostgresDataHandler()
+            "local" -> dataHandler = LocalDataHandler()
+            else -> {
+                logger.severe("Unsupported database type: ${dbConfig.config.getString("type")}. Disabling Plugin!")
+                canEnable = false
+            }
         }
         try {
             dataHandler.init()
