@@ -32,7 +32,7 @@ class LocalDataHandler: IDataHandler {
     }
 
     override fun save() {
-        fileManager.file.writeText(json.encodeToString<LocalDBModel>(LocalDBModel(hashMapOf())))
+        fileManager.file.writeText(json.encodeToString<LocalDBModel>(LocalDBModel(chunkCache)))
     }
 
     override fun load() {
