@@ -6,14 +6,14 @@ import live.einfachgustaf.smpclaim.chunk.ChunkPosition
 import live.einfachgustaf.smpclaim.data.IDataHandler
 import live.einfachgustaf.smpclaim.data.local.models.ChunkAccessModel
 import live.einfachgustaf.smpclaim.data.local.models.LocalDBModel
-import live.einfachgustaf.smpclaim.data.local.models.SerializableIntPair
+import live.einfachgustaf.smpclaim.data.local.models.SerialzableLocation
 import java.nio.file.Path
 import java.util.*
 import kotlin.collections.HashMap
 
 class LocalDataHandler: IDataHandler {
 
-    lateinit var chunkCache: HashMap<SerializableIntPair, ChunkAccessModel>
+    lateinit var chunkCache: HashMap<SerialzableLocation, ChunkAccessModel>
 
     private val json = Json { prettyPrint = true }
 
@@ -40,40 +40,40 @@ class LocalDataHandler: IDataHandler {
     }
 
     override fun addClaimedChunk(pos: ChunkPosition, player: UUID): Boolean {
-        if (chunkCache.containsKey(pos.toPair())) return false
+        if (chunkCache.containsKey(pos.toSerializableLocation())) return false
 
-        chunkCache[pos.toPair()] = ChunkAccessModel(player, arrayListOf())
+        chunkCache[pos.toSerializableLocation()] = ChunkAccessModel(player, arrayListOf())
         return true
     }
 
     override fun removeClaimedChunk(pos: ChunkPosition) {
-        chunkCache.remove(pos.toPair())
+        chunkCache.remove(pos.toSerializableLocation())
     }
 
     override fun isChunkClaimed(pos: ChunkPosition): Boolean {
-        return chunkCache.containsKey(pos.toPair())
+        return chunkCache.containsKey(pos.toSerializableLocation())
     }
 
     override fun getChunkOwner(pos: ChunkPosition): UUID? {
-        val query = chunkCache[pos.toPair()] ?: return null
+        val query = chunkCache[pos.toSerializableLocation()] ?: return null
 
         return query.owner
     }
 
     override fun addChunkAccess(pos: ChunkPosition, player: UUID) {
-        val query = chunkCache[pos.toPair()] ?: return
+        val query = chunkCache[pos.toSerializableLocation()] ?: return
 
         query.access.add(player)
     }
 
     override fun removeChunkAccess(pos: ChunkPosition, player: UUID) {
-        val query = chunkCache[pos.toPair()] ?: return
+        val query = chunkCache[pos.toSerializableLocation()] ?: return
 
         query.access.remove(player)
     }
 
     override fun hasAccessOrIsOwner(player: UUID, chunk: ChunkPosition): Boolean {
-        val query = chunkCache[chunk.toPair()] ?: return false
+        val query = chunkCache[chunk.toSerializableLocation()] ?: return false
 
         if (query.owner == player) return true
         if (query.access.contains(player)) return true
@@ -81,12 +81,12 @@ class LocalDataHandler: IDataHandler {
     }
 
     override fun getChunkAccess(chunk: ChunkPosition): List<UUID> {
-        val query = chunkCache[chunk.toPair()]?: return listOf()
+        val query = chunkCache[chunk.toSerializableLocation()]?: return listOf()
 
         return query.access
     }
 
-    private fun ChunkPosition.toPair(): SerializableIntPair {
-        return SerializableIntPair(x, z)
+    private fun ChunkPosition.toSerializableLocation(): SerialzableLocation {
+        return SerialzableLocation(world, x, z)
     }
 }
