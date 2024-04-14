@@ -3,10 +3,8 @@ package live.einfachgustaf.smpclaim.commands
 import com.mojang.brigadier.arguments.StringArgumentType
 import live.einfachgustaf.smpclaim.SMPClaim
 import live.einfachgustaf.smpclaim.chunk.ChunkPosition
-import net.axay.kspigot.commands.argument
-import net.axay.kspigot.commands.command
-import net.axay.kspigot.commands.literal
-import net.axay.kspigot.commands.runs
+import net.axay.kspigot.commands.*
+import net.axay.kspigot.extensions.onlinePlayers
 import org.bukkit.Bukkit
 
 object AccessCommand {
@@ -15,6 +13,9 @@ object AccessCommand {
         command("access") {
             literal("add") {
                 argument("player", StringArgumentType.word()) {
+                    suggestList {
+                        onlinePlayers.map { it.name }
+                    }
                     runs {
                         if (SMPClaim.dataHandler.getChunkOwner(ChunkPosition(this.player.chunk)) != this.player.uniqueId) {
                             this.player.sendMessage("You are not the owner of this chunk!")
@@ -33,6 +34,9 @@ object AccessCommand {
             }
             literal("remove") {
                 argument("player", StringArgumentType.word()) {
+                    suggestList {
+                        onlinePlayers.map { it.name }
+                    }
                     runs {
                         if (SMPClaim.dataHandler.getChunkOwner(ChunkPosition(this.player.chunk)) != this.player.uniqueId) {
                             this.player.sendMessage("You are not the owner of this chunk!")
