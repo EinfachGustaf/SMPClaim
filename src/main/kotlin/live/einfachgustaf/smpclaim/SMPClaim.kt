@@ -6,6 +6,7 @@ import live.einfachgustaf.smpclaim.commands.ClaimCommand
 import live.einfachgustaf.smpclaim.commands.UnclaimCommand
 import live.einfachgustaf.smpclaim.data.IDataHandler
 import live.einfachgustaf.smpclaim.data.PostgresDataHandler
+import live.einfachgustaf.smpclaim.data.local.LocalDataHandler
 import live.einfachgustaf.smpclaim.listeners.Listeners
 import live.einfachgustaf.smpclaim.utils.Config
 import live.einfachgustaf.smpclaim.utils.WorldGuardApi
@@ -33,6 +34,8 @@ class SMPClaim : KSpigot() {
         dbConfig.init()
         if (dbConfig.config.getString("type") == "postgres")
             dataHandler = PostgresDataHandler()
+        else if (dbConfig.config.getString("type") == "local")
+            dataHandler = LocalDataHandler()
         else {
             logger.severe("Unsupported database type: ${dbConfig.config.getString("type")}. Disabling Plugin!")
             canEnable = false

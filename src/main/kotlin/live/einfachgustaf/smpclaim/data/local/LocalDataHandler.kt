@@ -72,7 +72,7 @@ class LocalDataHandler: IDataHandler {
 
     override fun removeChunkAccess(pos: ChunkPosition, player: UUID) {
         val query = chunkCache[pos.toPair()] ?: return
-        
+
         query.access.remove(player)
     }
 
