@@ -12,13 +12,13 @@ A simple chunk claim system for SMP's used on the **EinfachGustaf.live SMP**.
 - You are good to go!
 
 ## Supported database types
-| Database     | Supported | Comment             |
-|--------------|-----------|---------------------|
-| Local (JSON) | 🟢        | **not recommended** |
-| PostgreSQL   | 🟢        | **recommended**     |
+| Database     | NAME         | Supported | Comment             |
+|--------------|--------------|-----------|---------------------|
+| Local (JSON) | `LOCAL_JSON` | 🟢        | **not recommended** |
+| PostgreSQL   | `POSTGRES`   | 🟢        | **recommended**     |
 
 ## Usage
-| Command      | Description                                                     |
+| Command                       | Description                                    |
 |-------------------------------|------------------------------------------------|
 | /claim                        | Claim the chunk you are standing on            |
 | /unclaim                      | Unclaim the chunk you are standing on          |
