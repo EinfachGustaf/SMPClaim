@@ -6,13 +6,14 @@ import live.einfachgustaf.smpclaim.chunk.ChunkPosition
 import live.einfachgustaf.smpclaim.data.IDataHandler
 import live.einfachgustaf.smpclaim.data.local.models.ChunkAccessModel
 import live.einfachgustaf.smpclaim.data.local.models.LocalDBModel
+import live.einfachgustaf.smpclaim.data.local.models.SerializableIntPair
 import java.nio.file.Path
 import java.util.*
 import kotlin.collections.HashMap
 
 class LocalDataHandler: IDataHandler {
 
-    lateinit var chunkCache: HashMap<Pair<Int, Int>, ChunkAccessModel>
+    lateinit var chunkCache: HashMap<SerializableIntPair, ChunkAccessModel>
 
     private val json = Json { prettyPrint = true }
 
@@ -23,9 +24,12 @@ class LocalDataHandler: IDataHandler {
 
     override fun init() {
         fileManager.setup()
+        load()
     }
 
-    override fun exit() = Unit
+    override fun exit() {
+        save()
+    }
 
     override fun save() {
         fileManager.file.writeText(json.encodeToString<LocalDBModel>(LocalDBModel(hashMapOf())))
@@ -82,7 +86,7 @@ class LocalDataHandler: IDataHandler {
         return query.access
     }
 
-    private fun ChunkPosition.toPair(): Pair<Int, Int> {
-        return Pair(x, z)
+    private fun ChunkPosition.toPair(): SerializableIntPair {
+        return SerializableIntPair(x, z)
     }
 }

@@ -43,6 +43,7 @@ class SMPClaim : KSpigot() {
         try {
             dataHandler.init()
         } catch (e: Exception) {
+            e.printStackTrace()
             logger.severe("Error while initializing data handler: ${e.message}. Disabling Plugin!")
             canEnable = false
         }
@@ -71,6 +72,7 @@ class SMPClaim : KSpigot() {
     }
 
     override fun shutdown() {
+        dataHandler.exit()
     }
 
 }
