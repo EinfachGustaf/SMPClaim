@@ -59,15 +59,21 @@ class LocalDataHandler: IDataHandler {
     }
 
     override fun getChunkOwner(pos: ChunkPosition): UUID? {
-        return (chunkCache[pos.toPair()] ?: return null).owner
+        val query = chunkCache[pos.toPair()] ?: return null
+
+        return query.owner
     }
 
     override fun addChunkAccess(pos: ChunkPosition, player: UUID) {
-        (chunkCache[pos.toPair()] ?: return).access.add(player)
+        val query = chunkCache[pos.toPair()] ?: return
+
+        query.access.add(player)
     }
 
     override fun removeChunkAccess(pos: ChunkPosition, player: UUID) {
-        (chunkCache[pos.toPair()] ?: return).access.remove(player)
+        val query = chunkCache[pos.toPair()] ?: return
+        
+        query.access.remove(player)
     }
 
     override fun hasAccessOrIsOwner(player: UUID, chunk: ChunkPosition): Boolean {
@@ -80,7 +86,7 @@ class LocalDataHandler: IDataHandler {
 
     override fun getChunkAccess(chunk: ChunkPosition): List<UUID> {
         val query = chunkCache[chunk.toPair()]?: return listOf()
-        
+
         return query.access
     }
 
