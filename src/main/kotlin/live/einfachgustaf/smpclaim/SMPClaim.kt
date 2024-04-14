@@ -6,6 +6,7 @@ import live.einfachgustaf.smpclaim.commands.ClaimCommand
 import live.einfachgustaf.smpclaim.commands.UnclaimCommand
 import live.einfachgustaf.smpclaim.data.IDataHandler
 import live.einfachgustaf.smpclaim.data.PostgresDataHandler
+import live.einfachgustaf.smpclaim.data.local.LocalDataHandler
 import live.einfachgustaf.smpclaim.listeners.Listeners
 import live.einfachgustaf.smpclaim.utils.Config
 import live.einfachgustaf.smpclaim.utils.WorldGuardApi
@@ -31,15 +32,18 @@ class SMPClaim : KSpigot() {
         // ### Database ### //
         dbConfig = DBConfig()
         dbConfig.init()
-        if (dbConfig.config.getString("type") == "postgres")
-            dataHandler = PostgresDataHandler()
-        else {
-            logger.severe("Unsupported database type: ${dbConfig.config.getString("type")}. Disabling Plugin!")
-            canEnable = false
+        when (dbConfig.config.getString("type")) {
+            "postgres" -> dataHandler = PostgresDataHandler()
+            "local" -> dataHandler = LocalDataHandler()
+            else -> {
+                logger.severe("Unsupported database type: ${dbConfig.config.getString("type")}. Disabling Plugin!")
+                canEnable = false
+            }
         }
         try {
             dataHandler.init()
         } catch (e: Exception) {
+            e.printStackTrace()
             logger.severe("Error while initializing data handler: ${e.message}. Disabling Plugin!")
             canEnable = false
         }
@@ -68,6 +72,7 @@ class SMPClaim : KSpigot() {
     }
 
     override fun shutdown() {
+        dataHandler.exit()
     }
 
 }
