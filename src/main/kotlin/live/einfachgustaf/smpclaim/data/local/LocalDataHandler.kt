@@ -22,25 +22,17 @@ class LocalDataHandler: IDataHandler {
     )
 
     override fun init() {
-        val fileManager = FileManager(
-            Path.of("plugins/SMPClaim/localdb.json"),
-            json.encodeToString<LocalDBModel>(LocalDBModel(hashMapOf()))
-        )
         fileManager.setup()
-
-        chunkCache = json.decodeFromString<LocalDBModel>(fileManager.file.readText()).db
     }
 
-    override fun exit() {
-        TODO("Not yet implemented")
-    }
+    override fun exit() = Unit
 
     override fun save() {
         fileManager.file.writeText(json.encodeToString<LocalDBModel>(LocalDBModel(hashMapOf())))
     }
 
     override fun load() {
-        TODO("Not yet implemented")
+        chunkCache = json.decodeFromString<LocalDBModel>(fileManager.file.readText()).db
     }
 
     override fun addClaimedChunk(pos: ChunkPosition, player: UUID): Boolean {
