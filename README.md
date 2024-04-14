@@ -12,9 +12,10 @@ A simple chunk claim system for SMP's used on the **EinfachGustaf.live SMP**.
 - You are good to go!
 
 ## Supported database types
-| Database   | Supported |
-| ---------- | --------- |
-| PostgreSQL | 🟢       |
+| Database     | Supported | Comment             |
+|--------------|-----------|---------------------|
+| Local (JSON) | 🟢        | **not recommended** |
+| PostgreSQL   | 🟢        | **recommended**     |
 
 ## Usage
 | Command      | Description                                                     |
