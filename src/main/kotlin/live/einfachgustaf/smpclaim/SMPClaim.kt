@@ -42,11 +42,10 @@ class SMPClaim : KSpigot() {
                 return
             }
 
-            val handler = DataHandlerType.valueOf(
+            dataHandler = DataHandlerType.valueOf(
                 configType.uppercase()
             ).dataHandler
 
-            dataHandler = handler
         } catch (e: IllegalArgumentException) {
             logger.severe("Data handler not found: ${e.message}. Disabling Plugin!")
             canEnable = false
