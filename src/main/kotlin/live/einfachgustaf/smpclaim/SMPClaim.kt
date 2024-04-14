@@ -8,6 +8,7 @@ import live.einfachgustaf.smpclaim.data.IDataHandler
 import live.einfachgustaf.smpclaim.data.PostgresDataHandler
 import live.einfachgustaf.smpclaim.data.local.LocalDataHandler
 import live.einfachgustaf.smpclaim.listeners.Listeners
+import live.einfachgustaf.smpclaim.types.DataHandlerType
 import live.einfachgustaf.smpclaim.utils.Config
 import live.einfachgustaf.smpclaim.utils.WorldGuardApi
 import live.einfachgustaf.smpclaim.utils.configs.DBConfig
@@ -32,14 +33,25 @@ class SMPClaim : KSpigot() {
         // ### Database ### //
         dbConfig = DBConfig()
         dbConfig.init()
-        when (dbConfig.config.getString("type")) {
-            "postgres" -> dataHandler = PostgresDataHandler()
-            "local" -> dataHandler = LocalDataHandler()
-            else -> {
-                logger.severe("Unsupported database type: ${dbConfig.config.getString("type")}. Disabling Plugin!")
+        try {
+            val configType = dbConfig.config.getString("type")
+
+            if (configType == null) {
+                logger.severe("Config entry 'type' not found. Disabling Plugin!")
                 canEnable = false
+                return
             }
+
+            val handler = DataHandlerType.valueOf(
+                configType.uppercase()
+            ).dataHandler
+
+            dataHandler = handler
+        } catch (e: IllegalArgumentException) {
+            logger.severe("Data handler not found: ${e.message}. Disabling Plugin!")
+            canEnable = false
         }
+
         try {
             dataHandler.init()
         } catch (e: Exception) {
@@ -72,7 +84,10 @@ class SMPClaim : KSpigot() {
     }
 
     override fun shutdown() {
-        dataHandler.exit()
+        try {
+            dataHandler.exit()
+        } catch (e: UninitializedPropertyAccessException) {
+            logger.severe("'dataHandler' is not initialized")
+        }
     }
-
 }
