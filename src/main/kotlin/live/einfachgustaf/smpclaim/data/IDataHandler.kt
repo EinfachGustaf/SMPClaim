@@ -1,7 +1,7 @@
 package live.einfachgustaf.smpclaim.data
 
 import live.einfachgustaf.smpclaim.chunk.ChunkPosition
-import java.util.UUID
+import java.util.*
 
 interface IDataHandler {
 

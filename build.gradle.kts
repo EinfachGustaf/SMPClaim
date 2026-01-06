@@ -1,8 +1,9 @@
 plugins {
-    kotlin("jvm") version "2.3.0"
-    kotlin("plugin.serialization") version "2.3.0"
-    id("io.papermc.paperweight.userdev") version "2.0.0-SNAPSHOT"
-    id("xyz.jpenilla.run-paper") version "3.0.2"
+    java
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlinx.serialization.plugin)
+    alias(libs.plugins.paperweight.userdev)
+    alias(libs.plugins.run.paper)
 }
 
 group = "live.einfachgustaf"
@@ -10,51 +11,41 @@ version = "1.2"
 
 repositories {
     mavenCentral()
-
-    // EngineHub (WorldGuard)
-    maven("https://maven.enginehub.org/repo/")
+    maven("https://maven.enginehub.org/repo/") // EngineHub (WorldGuard)
 }
 
 dependencies {
+    paperweight.paperDevBundle(libs.versions.paper)
 
-    // Paper
-    paperweight.paperDevBundle(libs.versions.paperDevBundle)
-
-    // KSpigot
     compileOnly(libs.kspigot)
+    compileOnly(libs.kotlinxserialization)
 
-    // WorldGuard
     compileOnly(libs.worldguard) {
         exclude(group = "com.google.guava")
         exclude(group = "com.google.code.gson")
         exclude(group = "it.unimi.dsi")
     }
-
-    // Database Drivers
-    compileOnly(libs.postgresql)
-
-    // Exposed
-    compileOnly(libs.bundles.exposed)
-
-    // kotlinx-serialization
-    compileOnly(libs.kotlinxserialization)
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
 
 tasks {
     runServer {
-        minecraftVersion("1.21.11")
+        minecraftVersion(libs.versions.minecraft.get())
         downloadPlugins {
-            modrinth("worldedit", "XlUIRmF8") // WorldEdit
-            url("https://dev.bukkit.org/projects/worldguard/files/latest") // WorldGuard
+            modrinth("worldedit", libs.versions.worldedit.get()) // WorldEdit
+            url("https://ci.enginehub.org/repository/download/bt11/28376:id/worldguard-bukkit-7.0.16-SNAPSHOT-dist.jar?branch=version/7.0.x&guest=1") // WorldGuard
         }
     }
 
     withType<Jar> {
         archiveFileName.set("smpclaim-$version.jar")
+    }
+
+    processResources {
+        filesMatching("plugin.yml") {
+            expand(
+                "version" to project.version
+            )
+        }
     }
 }
 

@@ -1,6 +1,5 @@
 package live.einfachgustaf.smpclaim.data.local
 
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import live.einfachgustaf.smpclaim.chunk.ChunkPosition
 import live.einfachgustaf.smpclaim.data.IDataHandler
@@ -9,7 +8,6 @@ import live.einfachgustaf.smpclaim.data.local.models.LocalDBModel
 import live.einfachgustaf.smpclaim.data.local.models.SerialzableLocation
 import java.nio.file.Path
 import java.util.*
-import kotlin.collections.HashMap
 
 class LocalDataHandler: IDataHandler {
 
