@@ -1,0 +1,10 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: smpclaim
+      POSTGRES_PASSWORD: testing
+    ports:
+      - "5432:5432"
