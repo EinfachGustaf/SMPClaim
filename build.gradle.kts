@@ -1,8 +1,8 @@
 plugins {
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "2.3.0"
     kotlin("plugin.serialization") version "1.9.22"
-    id("io.papermc.paperweight.userdev") version "1.5.11"
-    id("xyz.jpenilla.run-paper") version "2.2.3"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.19"
+    id("xyz.jpenilla.run-paper") version "3.0.2"
 }
 
 group = "live.einfachgustaf"
@@ -42,9 +42,9 @@ tasks.test {
 
 tasks {
     runServer {
-        minecraftVersion("1.20.4")
+        minecraftVersion("1.21.11")
         downloadPlugins {
-            modrinth("worldedit", "JzCMkGax") // WorldEdit
+            modrinth("worldedit", "XlUIRmF8") // WorldEdit
             url("https://dev.bukkit.org/projects/worldguard/files/latest") // WorldGuard
         }
     }
@@ -55,5 +55,5 @@ tasks {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
