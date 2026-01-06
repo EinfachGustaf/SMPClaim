@@ -17,7 +17,7 @@ dependencyResolutionManagement {
             version("worldguard", "7.0.9")
             version("postgresql", "42.7.3")
             version("exposed", "0.35.1")
-            version("kotlinx-serialization", "1.6.3")
+            version("kotlinx-serialization", "1.9.0")
             version("paperDevBundle", "1.21.11-R0.1-SNAPSHOT")
 
             // Libraries (alias, group, artifact)
