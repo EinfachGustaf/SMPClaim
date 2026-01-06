@@ -9,6 +9,8 @@ plugins {
 group = "live.einfachgustaf"
 version = "1.2"
 
+val pluginVersion = version.toString() // fix ci error
+
 repositories {
     mavenCentral()
     maven("https://maven.enginehub.org/repo/") // EngineHub (WorldGuard)
@@ -44,7 +46,7 @@ tasks {
     processResources {
         filesMatching("paper-plugin.yml") {
             expand(
-                "version" to project.version
+                "version" to pluginVersion
             )
         }
     }
