@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.3.0"
     kotlin("plugin.serialization") version "1.9.22"
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.19"
+    id("io.papermc.paperweight.userdev") version "2.0.0-SNAPSHOT"
     id("xyz.jpenilla.run-paper") version "3.0.2"
 }
 
