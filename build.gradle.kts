@@ -24,7 +24,11 @@ dependencies {
     compileOnly(libs.kspigot)
 
     // WorldGuard
-    compileOnly(libs.worldguard)
+    compileOnly(libs.worldguard) {
+        exclude(group = "com.google.guava")
+        exclude(group = "com.google.code.gson")
+        exclude(group = "it.unimi.dsi")
+    }
 
     // Database Drivers
     compileOnly(libs.postgresql)
