@@ -5,8 +5,6 @@ import live.einfachgustaf.smpclaim.commands.ChunkInfoCommand
 import live.einfachgustaf.smpclaim.commands.ClaimCommand
 import live.einfachgustaf.smpclaim.commands.UnclaimCommand
 import live.einfachgustaf.smpclaim.data.IDataHandler
-import live.einfachgustaf.smpclaim.data.PostgresDataHandler
-import live.einfachgustaf.smpclaim.data.local.LocalDataHandler
 import live.einfachgustaf.smpclaim.listeners.Listeners
 import live.einfachgustaf.smpclaim.types.DataHandlerType
 import live.einfachgustaf.smpclaim.utils.Config
