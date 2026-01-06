@@ -3,12 +3,14 @@ version: ${version}
 api-version: 1.21
 author: EinfachGustaf.live
 main: live.einfachgustaf.smpclaim.SMPClaim
+loader: live.einfachgustaf.smpclaim.SMPClaimPluginLoader
 website: https://modrinth.com/plugin/smpclaim
 database: true
 description: A SMP claim plugin for Paper used by the EinfachGustaf.live SMP
 prefix: SMPClaim
-depend:
-  - WorldGuard
-libraries:
-  - "net.axay:kspigot:1.21.0"
-  - "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
+dependencies:
+  server:
+    WorldGuard:
+      load: BEFORE
+      required: true
+      join-classpath: true
