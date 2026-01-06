@@ -13,7 +13,7 @@ dependencyResolutionManagement {
         create("libs") {
 
             // Versions
-            version("kspigot", "1.20.3")
+            version("kspigot", "1.21.0")
             version("worldguard", "7.0.9")
             version("postgresql", "42.7.3")
             version("exposed", "0.35.1")
