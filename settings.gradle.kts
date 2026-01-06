@@ -14,7 +14,7 @@ dependencyResolutionManagement {
 
             // Versions
             version("kspigot", "1.21.0")
-            version("worldguard", "7.0.9")
+            version("worldguard", "7.0.15")
             version("postgresql", "42.7.8")
             version("exposed", "0.35.1")
             version("kotlinx-serialization", "1.9.0")
