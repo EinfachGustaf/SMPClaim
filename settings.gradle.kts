@@ -18,10 +18,13 @@ dependencyResolutionManagement {
             version("kotlinx-serialization-plugin", "1.9.0")
             version("paperweight-userdev", "2.0.0-SNAPSHOT")
             version("run-paper", "3.0.2")
+
             version("paper", "1.21.11-R0.1-SNAPSHOT")
+
             version("kspigot", "1.21.0")
             version("worldguard", "7.0.15")
             version("kotlinx-serialization", "1.9.0")
+            version("configurate", "4.2.0")
 
             plugin("kotlin-jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
             plugin("kotlinx-serialization-plugin", "org.jetbrains.kotlin.plugin.serialization")
@@ -31,8 +34,9 @@ dependencyResolutionManagement {
 
             library("kspigot", "net.axay", "kspigot").versionRef("kspigot")
             library("worldguard", "com.sk89q.worldguard", "worldguard-bukkit").versionRef("worldguard")
-            library("kotlinxserialization", "org.jetbrains.kotlinx", "kotlinx-serialization-json")
+            library("kotlinx-serialization", "org.jetbrains.kotlinx", "kotlinx-serialization-json")
                 .versionRef("kotlinx-serialization")
+            library("configurate", "org.spongepowered", "configurate-hocon").versionRef("configurate")
         }
     }
 }

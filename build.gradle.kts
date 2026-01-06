@@ -18,7 +18,8 @@ dependencies {
     paperweight.paperDevBundle(libs.versions.paper)
 
     compileOnly(libs.kspigot)
-    compileOnly(libs.kotlinxserialization)
+    compileOnly(libs.kotlinx.serialization)
+    compileOnly(libs.configurate)
 
     compileOnly(libs.worldguard) {
         exclude(group = "com.google.guava")

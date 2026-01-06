@@ -4,12 +4,11 @@ import live.einfachgustaf.smpclaim.commands.AccessCommand
 import live.einfachgustaf.smpclaim.commands.ChunkInfoCommand
 import live.einfachgustaf.smpclaim.commands.ClaimCommand
 import live.einfachgustaf.smpclaim.commands.UnclaimCommand
+import live.einfachgustaf.smpclaim.config.ConfigManager
 import live.einfachgustaf.smpclaim.data.IDataHandler
 import live.einfachgustaf.smpclaim.listeners.Listeners
-import live.einfachgustaf.smpclaim.types.DataHandlerType
 import live.einfachgustaf.smpclaim.utils.Config
 import live.einfachgustaf.smpclaim.utils.WorldGuardApi
-import live.einfachgustaf.smpclaim.utils.configs.DBConfig
 import live.einfachgustaf.smpclaim.utils.configs.ListenerConfig
 import net.axay.kspigot.main.KSpigot
 import org.bukkit.Bukkit
@@ -20,34 +19,17 @@ class SMPClaim : KSpigot() {
         lateinit var instance: SMPClaim; private set
         lateinit var worldGuardApi: WorldGuardApi; private set
         lateinit var dataHandler: IDataHandler; private set
-        lateinit var dbConfig: Config; private set
         lateinit var listenerConfig: Config; private set
-        private var canEnable: Boolean = true
     }
+
+    private var canEnable: Boolean = true
+    val configManager = ConfigManager()
 
     override fun load() {
         instance = this
+        configManager.initialize()
 
-        // ### Database ### //
-        dbConfig = DBConfig()
-        dbConfig.init()
-        try {
-            val configType = dbConfig.config.getString("type")
-
-            if (configType == null) {
-                logger.severe("Config entry 'type' not found. Disabling Plugin!")
-                canEnable = false
-                return
-            }
-
-            dataHandler = DataHandlerType.valueOf(
-                configType.uppercase()
-            ).dataHandler
-
-        } catch (e: IllegalArgumentException) {
-            logger.severe("Data handler not found: ${e.message}. Disabling Plugin!")
-            canEnable = false
-        }
+        dataHandler = configManager.config.dataHandlerType.dataHandler
 
         try {
             dataHandler.init()
@@ -57,7 +39,6 @@ class SMPClaim : KSpigot() {
             canEnable = false
         }
 
-        // ### WorldGuard ### //
         worldGuardApi = WorldGuardApi()
         worldGuardApi.init()
     }
@@ -68,12 +49,10 @@ class SMPClaim : KSpigot() {
             return
         }
 
-        // ### Listeners ### //
         listenerConfig = ListenerConfig()
         listenerConfig.init()
         Listeners().registerListeners()
 
-        // ### Commands ### //
         AccessCommand.register()
         ClaimCommand.register()
         UnclaimCommand.register()

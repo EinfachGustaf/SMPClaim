@@ -17,7 +17,8 @@ public class SMPClaimPluginLoader implements PluginLoader {
 
     private final Set<Dependency> dependencies = Set.of(
             new Dependency(new DefaultArtifact("net.axay:kspigot:1.21.0"), null),
-            new Dependency(new DefaultArtifact("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"), null)
+            new Dependency(new DefaultArtifact("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"), null),
+            new Dependency(new DefaultArtifact("org.spongepowered:configurate-hocon:4.1.2"), null)
     );
 
     @Override
