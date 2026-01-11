@@ -6,12 +6,12 @@ import org.spongepowered.configurate.serialize.SerializationException
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
-class ConfigManager {
+class ConfigManager(private val plugin: SMPClaim) {
 
     lateinit var config: CoreConfig
 
     fun initialize() {
-        val configFile = Path(SMPClaim.instance.dataFolder.path, "core.conf")
+        val configFile = Path(plugin.dataFolder.path, "core.conf")
         val loader = HoconConfigurationLoader.builder()
             .path(configFile)
             .build()
@@ -24,7 +24,7 @@ class ConfigManager {
         config = try {
             node.get(CoreConfig::class.java) ?: CoreConfig()
         } catch (ex: SerializationException) {
-            SMPClaim.instance.slF4JLogger.warn("Error loading config, default values \u200B\u200Bwill be used\n", ex)
+            plugin.slF4JLogger.warn("Error loading config, default values \u200B\u200Bwill be used\n", ex)
             CoreConfig()
         }
 
@@ -32,7 +32,7 @@ class ConfigManager {
             node.set(CoreConfig::class.java, config)
             loader.save(node)
         } catch (ex: Exception) {
-            SMPClaim.instance.slF4JLogger.error("Error saving config\n", ex)
+            plugin.slF4JLogger.error("Error saving config\n", ex)
         }
     }
 }
