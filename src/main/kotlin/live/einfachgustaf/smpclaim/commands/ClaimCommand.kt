@@ -15,12 +15,9 @@ class ClaimCommand @Inject constructor(
     fun register() {
         command("claim") {
             runs {
-                println("isPlayer")
                 if (dataHandler.addClaimedChunk(ChunkPosition(this.player.chunk), this.player.uniqueId)) {
-                    println("claim")
                     this.player.sendMessage("Chunk claimed!")
                 } else {
-                    println("alreadyClaimed")
                     this.player.sendMessage("Chunk already claimed!")
                 }
             }

@@ -32,7 +32,6 @@ class SMPClaimModule(private val plugin: SMPClaim) : AbstractModule() {
         try {
             dataHandler.init()
         } catch (e: Exception) {
-            e.printStackTrace()
             plugin.logger.severe("Error while initializing data handler: ${e.message}. Disabling Plugin!")
             throw e
         }
