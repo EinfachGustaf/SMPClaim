@@ -10,11 +10,12 @@ object UnclaimCommand {
     fun register() {
         command("unclaim") {
             runs {
-                if (SMPClaim.dataHandler.getChunkOwner(ChunkPosition(this.player.chunk)) != this.player.uniqueId) {
+                val currentChunk = ChunkPosition(this.player.chunk)
+                if (SMPClaim.dataHandler.getChunkOwner(currentChunk) != this.player.uniqueId) {
                     this.player.sendMessage("You do not own this chunk!")
                     return@runs
                 }
-                SMPClaim.dataHandler.removeClaimedChunk(ChunkPosition(this.player.chunk))
+                SMPClaim.dataHandler.removeClaimedChunk(currentChunk)
                     this.player.sendMessage("Chunk removed!")
             }
         }

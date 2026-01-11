@@ -11,7 +11,8 @@ object ClaimCommand {
         command("claim") {
             runs {
                 println("isPlayer")
-                if (SMPClaim.dataHandler.addClaimedChunk(ChunkPosition(this.player.chunk), this.player.uniqueId)) {
+                val currentChunk = ChunkPosition(this.player.chunk)
+                if (SMPClaim.dataHandler.addClaimedChunk(currentChunk, this.player.uniqueId)) {
                     println("claim")
                     this.player.sendMessage("Chunk claimed!")
                 } else {
