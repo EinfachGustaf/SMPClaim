@@ -22,6 +22,7 @@ dependencies {
     compileOnly(libs.kspigot)
     compileOnly(libs.kotlinx.serialization)
     compileOnly(libs.configurate)
+    implementation("com.google.inject:guice:7.0.0")
 
     compileOnly(libs.worldguard) {
         exclude(group = "com.google.guava")

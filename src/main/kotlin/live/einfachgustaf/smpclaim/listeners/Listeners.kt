@@ -1,7 +1,8 @@
 package live.einfachgustaf.smpclaim.listeners
 
-import live.einfachgustaf.smpclaim.SMPClaim
 import live.einfachgustaf.smpclaim.chunk.ChunkPosition
+import live.einfachgustaf.smpclaim.data.IDataHandler
+import live.einfachgustaf.smpclaim.utils.Config
 import net.axay.kspigot.event.listen
 import org.bukkit.GameMode
 import org.bukkit.entity.Entity
@@ -14,33 +15,40 @@ import org.bukkit.event.hanging.HangingPlaceEvent
 import org.bukkit.event.player.*
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent
 import java.util.*
+import javax.inject.Inject
+import javax.inject.Named
+import javax.inject.Singleton
 
-class Listeners {
+@Singleton
+class Listeners @Inject constructor(
+    private val dataHandler: IDataHandler,
+    @Named("listenerConfig") private val listenerConfig: Config
+) {
     
-    private val msg = SMPClaim.listenerConfig.config.getString("message") ?: "§cDas kannst du hier nicht machen."
-    private val canEntityInteraction = SMPClaim.listenerConfig.config.getBoolean("canEntityInteraction")
-    private val canEntityDamage = SMPClaim.listenerConfig.config.getBoolean("canEntityDamage")
-    private val canCreatureSpawn = SMPClaim.listenerConfig.config.getBoolean("canCreatureSpawn")
-    private val canVehicleEntityCollision = SMPClaim.listenerConfig.config.getBoolean("canVehicleEntityCollision")
-    private val canBlockBreak = SMPClaim.listenerConfig.config.getBoolean("canBlockBreak")
-    private val canChangeBlock = SMPClaim.listenerConfig.config.getBoolean("canChangeBlock")
-    private val canBlockPlace = SMPClaim.listenerConfig.config.getBoolean("canBlockPlace")
-    private val canPlayerInteract = SMPClaim.listenerConfig.config.getBoolean("canPlayerInteract")
-    private val canProjectileLaunch = SMPClaim.listenerConfig.config.getBoolean("canProjectileLaunch")
-    private val canHangingBreakByEntity = SMPClaim.listenerConfig.config.getBoolean("canHangingBreakByEntity")
-    private val canHangingPlace = SMPClaim.listenerConfig.config.getBoolean("canHangingPlace")
-    private val canPlayerBucketFill = SMPClaim.listenerConfig.config.getBoolean("canPlayerBucketFill")
-    private val canPlayerBucketEmpty = SMPClaim.listenerConfig.config.getBoolean("canPlayerBucketEmpty")
-    private val canPlayerBucketEntity = SMPClaim.listenerConfig.config.getBoolean("canPlayerBucketEntity")
-    private val canPlayerLeashEntity = SMPClaim.listenerConfig.config.getBoolean("canPlayerLeashEntity")
-    private val canPlayerUnleashEntity = SMPClaim.listenerConfig.config.getBoolean("canPlayerUnleashEntity")
-    private val canPlayerArmorStandManipulate = SMPClaim.listenerConfig.config.getBoolean("canPlayerArmorStandManipulate")
-    private val canBlockExplode = SMPClaim.listenerConfig.config.getBoolean("canBlockExplode")
-    private val canEntityExplode = SMPClaim.listenerConfig.config.getBoolean("canEntityExplode")
-    private val canBlockSpread = SMPClaim.listenerConfig.config.getBoolean("canBlockSpread")
-    private val canBlockPistonExtend = SMPClaim.listenerConfig.config.getBoolean("canBlockPistonExtend")
-    private val canBlockPistonRetract = SMPClaim.listenerConfig.config.getBoolean("canBlockPistonRetract")
-    private val canBlockFertilize = SMPClaim.listenerConfig.config.getBoolean("canBlockFertilize")
+    private val msg = listenerConfig.config.getString("message") ?: "§cDas kannst du hier nicht machen."
+    private val canEntityInteraction = listenerConfig.config.getBoolean("canEntityInteraction")
+    private val canEntityDamage = listenerConfig.config.getBoolean("canEntityDamage")
+    private val canCreatureSpawn = listenerConfig.config.getBoolean("canCreatureSpawn")
+    private val canVehicleEntityCollision = listenerConfig.config.getBoolean("canVehicleEntityCollision")
+    private val canBlockBreak = listenerConfig.config.getBoolean("canBlockBreak")
+    private val canChangeBlock = listenerConfig.config.getBoolean("canChangeBlock")
+    private val canBlockPlace = listenerConfig.config.getBoolean("canBlockPlace")
+    private val canPlayerInteract = listenerConfig.config.getBoolean("canPlayerInteract")
+    private val canProjectileLaunch = listenerConfig.config.getBoolean("canProjectileLaunch")
+    private val canHangingBreakByEntity = listenerConfig.config.getBoolean("canHangingBreakByEntity")
+    private val canHangingPlace = listenerConfig.config.getBoolean("canHangingPlace")
+    private val canPlayerBucketFill = listenerConfig.config.getBoolean("canPlayerBucketFill")
+    private val canPlayerBucketEmpty = listenerConfig.config.getBoolean("canPlayerBucketEmpty")
+    private val canPlayerBucketEntity = listenerConfig.config.getBoolean("canPlayerBucketEntity")
+    private val canPlayerLeashEntity = listenerConfig.config.getBoolean("canPlayerLeashEntity")
+    private val canPlayerUnleashEntity = listenerConfig.config.getBoolean("canPlayerUnleashEntity")
+    private val canPlayerArmorStandManipulate = listenerConfig.config.getBoolean("canPlayerArmorStandManipulate")
+    private val canBlockExplode = listenerConfig.config.getBoolean("canBlockExplode")
+    private val canEntityExplode = listenerConfig.config.getBoolean("canEntityExplode")
+    private val canBlockSpread = listenerConfig.config.getBoolean("canBlockSpread")
+    private val canBlockPistonExtend = listenerConfig.config.getBoolean("canBlockPistonExtend")
+    private val canBlockPistonRetract = listenerConfig.config.getBoolean("canBlockPistonRetract")
+    private val canBlockFertilize = listenerConfig.config.getBoolean("canBlockFertilize")
 
 
     fun registerListeners() {
@@ -273,7 +281,7 @@ class Listeners {
     // --- HELPER METHODS --- //
 
     private fun isOwnerOrHasAccess(player: UUID, chunk: ChunkPosition): Boolean {
-        return SMPClaim.dataHandler.isChunkClaimed(chunk) && SMPClaim.dataHandler.hasAccessOrIsOwner(player, chunk)
+        return dataHandler.isChunkClaimed(chunk) && dataHandler.hasAccessOrIsOwner(player, chunk)
     }
 
     /**
@@ -291,7 +299,7 @@ class Listeners {
         val chunk = player.location.chunk
 
         // Return false if the chunk is not claimed
-        if (!SMPClaim.dataHandler.isChunkClaimed(ChunkPosition(chunk))) return false
+        if (!dataHandler.isChunkClaimed(ChunkPosition(chunk))) return false
 
         // Return false if the event is cancelled ||or it is allowed ||or the player is the owner of the chunk or has access to the chunk
         if (event.isCancelled || check || isOwnerOrHasAccess(player.uniqueId, ChunkPosition(chunk))) return false
@@ -310,7 +318,7 @@ class Listeners {
     private fun check(event: Cancellable, check: Boolean, chunk: ChunkPosition): Boolean {
 
         // Return false if the chunk is not claimed
-        if (!SMPClaim.dataHandler.isChunkClaimed(chunk)) return false
+        if (!dataHandler.isChunkClaimed(chunk)) return false
 
         // Return false if the event is cancelled ||or it is allowed ||or the player is the owner of the chunk or has access to the chunk
         if (event.isCancelled || check) return false
@@ -335,7 +343,7 @@ class Listeners {
         val chunk = entity.location.chunk
 
         // Return false if the chunk is not claimed
-        if (!SMPClaim.dataHandler.isChunkClaimed(ChunkPosition(chunk))) return false
+        if (!dataHandler.isChunkClaimed(ChunkPosition(chunk))) return false
 
         // Only if the entity is a player and should be treated as a player
         if (entity is Player && entityMaybePlayer) {
