@@ -291,6 +291,10 @@ class Listeners {
         return true
     }
 
+    private fun sendMessage(player: Player) {
+        player.sendMessage(msg)
+    }
+    
     private fun sendMessage(entity: Entity) {
         if (entity is Player) entity.sendMessage(msg)
     }
