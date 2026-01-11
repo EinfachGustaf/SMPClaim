@@ -53,25 +53,19 @@ class LocalDataHandler: IDataHandler {
     }
 
     override fun getChunkOwner(pos: ChunkPosition): UUID? {
-        val query = chunkCache[pos.toSerializableLocation()] ?: return null
-
-        return query.owner
+        return getChunkData(pos)?.owner
     }
 
     override fun addChunkAccess(pos: ChunkPosition, player: UUID) {
-        val query = chunkCache[pos.toSerializableLocation()] ?: return
-
-        query.access.add(player)
+        getChunkData(pos)?.access?.add(player)
     }
 
     override fun removeChunkAccess(pos: ChunkPosition, player: UUID) {
-        val query = chunkCache[pos.toSerializableLocation()] ?: return
-
-        query.access.remove(player)
+        getChunkData(pos)?.access?.remove(player)
     }
 
     override fun hasAccessOrIsOwner(player: UUID, chunk: ChunkPosition): Boolean {
-        val query = chunkCache[chunk.toSerializableLocation()] ?: return false
+        val query = getChunkData(chunk) ?: return false
 
         if (query.owner == player) return true
         if (query.access.contains(player)) return true
@@ -79,9 +73,14 @@ class LocalDataHandler: IDataHandler {
     }
 
     override fun getChunkAccess(chunk: ChunkPosition): List<UUID> {
-        val query = chunkCache[chunk.toSerializableLocation()]?: return listOf()
-
-        return query.access
+        return getChunkData(chunk)?.access ?: listOf()
+    }
+    
+    /**
+     * Helper to retrieve chunk data from cache.
+     */
+    private fun getChunkData(pos: ChunkPosition): ChunkAccessModel? {
+        return chunkCache[pos.toSerializableLocation()]
     }
 
     private fun ChunkPosition.toSerializableLocation(): SerialzableLocation {

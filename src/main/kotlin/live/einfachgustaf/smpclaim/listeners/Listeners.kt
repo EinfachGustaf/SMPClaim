@@ -49,222 +49,161 @@ class Listeners {
          * Listener for when a player right-clicks on an entity.
          */
         listen<PlayerInteractEntityEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canEntityInteraction, it.player)) return@listen
-            sendMessage(it.player)
-            it.isCancelled = true
+            handlePlayerEvent(it, canEntityInteraction, it.player)
         }
 
         /**
          * Listener for when a entity is damaged by another entity/player
          */
         listen<EntityDamageByEntityEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canEntityDamage, it.entity, true)) return@listen
-            sendMessage(it.entity)
-            it.isCancelled = true
+            handleEntityEvent(it, canEntityDamage, it.entity, true)
         }
 
         /**
          * Listener for when a creature spawns
          */
         listen<CreatureSpawnEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canCreatureSpawn, it.entity, false)) return@listen
-            it.isCancelled = true
+            handleEntityEvent(it, canCreatureSpawn, it.entity, false)
         }
 
         /**
          * Listener for when a vehicle collides with an entity
          */
         listen<VehicleEntityCollisionEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canVehicleEntityCollision, it.entity, false)) return@listen
-            it.isCancelled = true
+            handleEntityEvent(it, canVehicleEntityCollision, it.entity, false)
         }
 
         /**
          * Listener for when a player breaks a block
          */
         listen<BlockBreakEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canBlockBreak, it.player)) return@listen
-            sendMessage(it.player)
-            it.isCancelled = true
+            handlePlayerEvent(it, canBlockBreak, it.player)
         }
 
         /**
          * Listener for when an entity changes a block
          */
         listen<EntityChangeBlockEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canChangeBlock, it.entity, true)) return@listen
-            sendMessage(it.entity)
-            it.isCancelled = true
+            handleEntityEvent(it, canChangeBlock, it.entity, true)
         }
 
         /**
          * Listener for when a player places a block
          */
         listen<BlockPlaceEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canBlockPlace, it.player)) return@listen
-            sendMessage(it.player)
-            it.isCancelled = true
+            handlePlayerEvent(it, canBlockPlace, it.player)
         }
 
         /**
          * Listener for when a player interacts with something
          */
         listen<PlayerInteractEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canPlayerInteract, it.player)) return@listen
-            sendMessage(it.player)
-            it.isCancelled = true
+            handlePlayerEvent(it, canPlayerInteract, it.player)
         }
 
         /**
          * Listener for when a player launches a projectile
          */
         listen<ProjectileLaunchEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canProjectileLaunch, it.entity, true)) return@listen
-            sendMessage(it.entity)
-            it.isCancelled = true
+            handleEntityEvent(it, canProjectileLaunch, it.entity, true)
         }
 
         /**
          * Listener for when a player breaks a hanging entity
          */
         listen<HangingBreakByEntityEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canHangingBreakByEntity, it.remover, true)) return@listen
-            sendMessage(it.remover)
-            it.isCancelled = true
+            handleEntityEvent(it, canHangingBreakByEntity, it.remover, true)
         }
 
         /**
          * Listener for when a hanging entity is placed
          */
         listen<HangingPlaceEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canHangingPlace, it.entity, true)) return@listen
-            sendMessage(it.entity)
-            it.isCancelled = true
+            handleEntityEvent(it, canHangingPlace, it.entity, true)
         }
 
         /**
          * Listener for when a player fills a bucket
          */
         listen<PlayerBucketFillEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canPlayerBucketFill, it.player)) return@listen
-            sendMessage(it.player)
-            it.isCancelled = true
+            handlePlayerEvent(it, canPlayerBucketFill, it.player)
         }
 
         /**
          * Listener for when a player empties a bucket
          */
         listen<PlayerBucketEmptyEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canPlayerBucketEmpty, it.player)) return@listen
-            sendMessage(it.player)
-            it.isCancelled = true
+            handlePlayerEvent(it, canPlayerBucketEmpty, it.player)
         }
 
         /**
          * Listener for when a player picks up an entity with a bucket
          */
         listen<PlayerBucketEntityEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canPlayerBucketEntity, it.player)) return@listen
-            sendMessage(it.player)
-            it.isCancelled = true
+            handlePlayerEvent(it, canPlayerBucketEntity, it.player)
         }
 
         /**
          * Listener for when a player leashes an entity
          */
         listen<PlayerLeashEntityEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canPlayerLeashEntity, it.player)) return@listen
-            sendMessage(it.player)
-            it.isCancelled = true
+            handlePlayerEvent(it, canPlayerLeashEntity, it.player)
         }
 
         /**
          * Listener for when a player unleashes an entity
          */
         listen<PlayerUnleashEntityEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canPlayerUnleashEntity, it.player)) return@listen
-            sendMessage(it.player)
-            it.isCancelled = true
+            handlePlayerEvent(it, canPlayerUnleashEntity, it.player)
         }
 
         /**
          * Listener for when a player manipulates an armor stand
          */
         listen<PlayerArmorStandManipulateEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canPlayerArmorStandManipulate, it.player)) return@listen
-            sendMessage(it.player)
-            it.isCancelled = true
+            handlePlayerEvent(it, canPlayerArmorStandManipulate, it.player)
         }
 
         /**
          * Listener for when a block explodes
          */
         listen<BlockExplodeEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canBlockExplode, ChunkPosition(it.block.chunk))) return@listen
-            it.isCancelled = true
+            handleChunkEvent(it, canBlockExplode, ChunkPosition(it.block.chunk))
         }
 
         /**
          * Listener for when an entity explodes
          */
         listen<EntityExplodeEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canEntityExplode, ChunkPosition(it.entity.location.chunk))) return@listen
-            it.isCancelled = true
+            handleChunkEvent(it, canEntityExplode, ChunkPosition(it.entity.location.chunk))
         }
 
         /**
          * Listener for when a block spreads
          */
         listen<BlockSpreadEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canBlockSpread, ChunkPosition(it.source.chunk))) return@listen
-            it.isCancelled = true
+            handleChunkEvent(it, canBlockSpread, ChunkPosition(it.source.chunk))
         }
 
         /**
          * Listener for when a block is pushed by a piston
          */
         listen<BlockPistonExtendEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canBlockPistonExtend, ChunkPosition(it.block.chunk))) return@listen
-            it.isCancelled = true
+            handleChunkEvent(it, canBlockPistonExtend, ChunkPosition(it.block.chunk))
         }
 
         /**
          * Listener for when a block is pulled by a piston
          */
         listen<BlockPistonRetractEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canBlockPistonRetract, ChunkPosition(it.block.chunk))) return@listen
-            it.isCancelled = true
+            handleChunkEvent(it, canBlockPistonRetract, ChunkPosition(it.block.chunk))
         }
 
         /**
          * Listener for when a block is fertilized
          */
         listen<BlockFertilizeEvent> {
-            // Return if the event should not be cancelled
-            if (!check(it, canBlockFertilize, ChunkPosition(it.block.chunk))) return@listen
-            it.isCancelled = true
+            handleChunkEvent(it, canBlockFertilize, ChunkPosition(it.block.chunk))
         }
 
     }
@@ -352,11 +291,50 @@ class Listeners {
         return true
     }
 
-    private fun sendMessage(player: Player) {
-        player.sendMessage(msg)
-    }
     private fun sendMessage(entity: Entity) {
         if (entity is Player) entity.sendMessage(msg)
+    }
+    
+    /**
+     * Helper to handle player-based events consistently.
+     * Checks if event should be cancelled and handles cancellation and messaging.
+     */
+    private inline fun <reified T : Cancellable> handlePlayerEvent(
+        event: T,
+        canPerform: Boolean,
+        player: Player
+    ) {
+        if (!check(event, canPerform, player)) return
+        sendMessage(player)
+        event.isCancelled = true
+    }
+    
+    /**
+     * Helper to handle entity-based events consistently.
+     * Checks if event should be cancelled and handles cancellation and messaging.
+     */
+    private inline fun <reified T : Cancellable> handleEntityEvent(
+        event: T,
+        canPerform: Boolean,
+        entity: Entity,
+        entityMaybePlayer: Boolean
+    ) {
+        if (!check(event, canPerform, entity, entityMaybePlayer)) return
+        sendMessage(entity)
+        event.isCancelled = true
+    }
+    
+    /**
+     * Helper to handle chunk-based events consistently.
+     * Checks if event should be cancelled based on chunk position.
+     */
+    private inline fun <reified T : Cancellable> handleChunkEvent(
+        event: T,
+        canPerform: Boolean,
+        chunk: ChunkPosition
+    ) {
+        if (!check(event, canPerform, chunk)) return
+        event.isCancelled = true
     }
 
 }

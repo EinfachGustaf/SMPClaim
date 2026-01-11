@@ -33,6 +33,13 @@ class UUIDFetcher {
         private val nameCache: MutableMap<UUID?, String?> = HashMap()
 
         private val pool: ExecutorService = Executors.newCachedThreadPool()
+        
+        /**
+         * Helper to execute a task asynchronously with a consumer.
+         */
+        private fun <T> executeAsync(task: () -> T, action: Consumer<T>) {
+            pool.execute { action.accept(task()) }
+        }
 
         /**
          * Fetches the uuid asynchronously and passes it to the consumer
@@ -41,7 +48,7 @@ class UUIDFetcher {
          * @param action Do what you want to do with the uuid her
          */
         fun getUUID(name: String, action: Consumer<UUID?>) {
-            pool.execute { action.accept(getUUID(name)) }
+            executeAsync({ getUUID(name) }, action)
         }
 
         /**
@@ -62,14 +69,7 @@ class UUIDFetcher {
          * @param action Do what you want to do with the uuid her
          */
         fun getUUIDAt(name: String, timestamp: Long, action: Consumer<UUID?>) {
-            pool.execute {
-                action.accept(
-                    getUUIDAt(
-                        name,
-                        timestamp
-                    )
-                )
-            }
+            executeAsync({ getUUIDAt(name, timestamp) }, action)
         }
 
         /**
@@ -112,7 +112,7 @@ class UUIDFetcher {
          * @param action Do what you want to do with the name her
          */
         fun getName(uuid: UUID?, action: Consumer<String?>) {
-            pool.execute { action.accept(getName(uuid)) }
+            executeAsync({ getName(uuid) }, action)
         }
 
         /**
