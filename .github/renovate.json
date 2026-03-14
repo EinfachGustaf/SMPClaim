@@ -1,0 +1,12 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    "github>OneLiteFeatherNET/renovate:paper",
+    ":semanticCommitsDisabled"
+  ],
+  "labels": ["dependencies"],
+  "rebaseWhen": "conflicted",
+  "schedule": ["* 0-3 * * *"],
+  "baseBranches": ["dev"]
+}

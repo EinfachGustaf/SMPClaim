@@ -1,0 +1,20 @@
+name: Build
+
+on: [push]
+
+jobs:
+  build:
+    if: "!contains(github.event.commits[0].message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Clone Repo'
+        uses: actions/checkout@v6
+
+      - name: 'Fix Gradle Wrapper'
+        run: chmod +x gradlew
+
+      - name: 'Validate Gradle Wrapper'
+        uses: gradle/wrapper-validation-action@v3
+
+      - name: 'Build'
+        run: ./gradlew build --stacktrace --warning-mode=fail

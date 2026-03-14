@@ -1,0 +1,9 @@
+name: einfachgustaf-builderserver
+version: ${version}
+main: live.einfachgustaf.plugins.smpclaim.SMPClaim
+loader: live.einfachgustaf.plugins.smpclaim.SMPClaimPluginLoader
+bootstrapper: live.einfachgustaf.plugins.smpclaim.SMPClaimPluginBootstrap
+description: Builder Server Plugin for EinfachGustaf Network
+api-version: 1.21.11
+authors:
+  - Marlon
