@@ -23,7 +23,7 @@ dependencyResolutionManagement {
 
             version("kspigot", "1.21.0")
             version("worldguard", "7.0.15")
-            version("kotlinx-serialization", "1.9.0")
+            version("kotlinx-serialization", "1.11.0")
             version("configurate", "4.2.0")
 
             plugin("kotlin-jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
