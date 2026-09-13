@@ -14,8 +14,8 @@ dependencyResolutionManagement {
             version("minecraft", "1.21.11")
             version("worldedit", "XlUIRmF8")
 
-            version("kotlin", "2.3.0")
-            version("kotlinx-serialization-plugin", "1.9.0")
+            version("kotlin", "2.4.20")
+            version("kotlinx-serialization-plugin", "1.9.25")
             version("paperweight-userdev", "2.0.0-SNAPSHOT")
             version("run-paper", "3.0.2")
 
