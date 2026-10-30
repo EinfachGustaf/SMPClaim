@@ -24,3 +24,6 @@ jobs:
 
       - name: 'Build'
         run: ./gradlew build --stacktrace --warning-mode=fail
+
+      - name: 'Test'
+        run: ./gradlew test --stacktrace --warning-mode=fail
