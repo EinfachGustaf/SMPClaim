@@ -10,5 +10,6 @@ class PostgresConfig {
 
     val postgresUser = "smpclaim"
 
-    val postgresPassword = "someverysecurepassword"
+    @Comment("Password of the PostgreSQL database. Set this in core.conf if dataHandlerType is POSTGRESQL. No default password is shipped.")
+    val postgresPassword = ""
 }
