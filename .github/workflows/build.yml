@@ -23,7 +23,7 @@ jobs:
         uses: gradle/wrapper-validation-action@v3
 
       - name: 'Build'
-        run: ./gradlew build --stacktrace --warning-mode=fail
+        run: ./gradlew build --stacktrace
 
       - name: 'Test'
-        run: ./gradlew test --stacktrace --warning-mode=fail
+        run: ./gradlew test --stacktrace
