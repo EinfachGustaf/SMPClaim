@@ -40,7 +40,9 @@ class SMPClaim : KSpigot() {
         }
 
         worldGuardApi = WorldGuardApi()
-        worldGuardApi.init()
+        if (!worldGuardApi.init()) {
+            logger.warning("Failed to register the chunk-claim WorldGuard flag; WorldGuard region flags will not affect claiming.")
+        }
     }
 
     override fun startup() {
