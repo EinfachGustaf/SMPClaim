@@ -28,6 +28,11 @@ class ListenerConfig : Config("listener.yml") {
         config.addDefault("canBlockPistonExtend", false)
         config.addDefault("canBlockPistonRetract", false)
         config.addDefault("canBlockFertilize", false)
+        // --- Configurable protection switches (default = behaviour of PR #32) ---
+        config.addDefault("bypass.creative", false)
+        config.addDefault("bypass.permission", true)
+        config.addDefault("explosions.own-claim", true)
+        config.addDefault("explosions.filter-foreign-claims", true)
         config.options().copyDefaults(true)
         save()
     }

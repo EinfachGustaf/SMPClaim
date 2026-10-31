@@ -15,11 +15,17 @@ class ListenerLogicTest {
         creativeBypassActive: Boolean = false,
         permissionBypassEnabled: Boolean = true,
         ownerExplosionBypassEnabled: Boolean = true,
-        filterForeignClaims: Boolean = true,
-        triggererTriggered: Boolean = false
+        isExplosionEvent: Boolean = false
     ): Boolean = shouldCancelClaimEvent(
-        chunkClaimed, flagAllows, alreadyCancelled, bypasses, ownerOrMember,
-        creativeBypassActive, permissionBypassEnabled, ownerExplosionBypassEnabled, filterForeignClaims, triggererTriggered
+        chunkClaimed = chunkClaimed,
+        flagAllows = flagAllows,
+        alreadyCancelled = alreadyCancelled,
+        bypasses = bypasses,
+        ownerOrMember = ownerOrMember,
+        creativeBypassActive = creativeBypassActive,
+        permissionBypassEnabled = permissionBypassEnabled,
+        ownerExplosionBypassEnabled = ownerExplosionBypassEnabled,
+        isExplosionEvent = isExplosionEvent
     )
 
     @Test
@@ -61,7 +67,7 @@ class ListenerLogicTest {
         assertTrue(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = false, ownerOrMember = false,
-            triggererTriggered = true
+            isExplosionEvent = true
         ))
     }
 
@@ -70,7 +76,7 @@ class ListenerLogicTest {
         assertFalse(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = false, ownerOrMember = false,
-            creativeBypassActive = true, triggererTriggered = true
+            creativeBypassActive = true, isExplosionEvent = true
         ))
     }
 
@@ -85,8 +91,7 @@ class ListenerLogicTest {
         assertTrue(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = true, ownerOrMember = false,
-            permissionBypassEnabled = false,
-            triggererTriggered = true
+            permissionBypassEnabled = false, isExplosionEvent = true
         ))
     }
 
@@ -95,7 +100,7 @@ class ListenerLogicTest {
         assertFalse(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = false, ownerOrMember = true,
-            triggererTriggered = true
+            isExplosionEvent = true
         ))
     }
 
@@ -106,8 +111,7 @@ class ListenerLogicTest {
         assertFalse(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = false, ownerOrMember = true,
-            ownerExplosionBypassEnabled = false,
-            triggererTriggered = true
+            ownerExplosionBypassEnabled = false, isExplosionEvent = true
         ))
     }
 
@@ -116,7 +120,7 @@ class ListenerLogicTest {
         assertTrue(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = false, ownerOrMember = false,
-            triggererTriggered = true
+            isExplosionEvent = true
         ))
     }
 
@@ -125,7 +129,7 @@ class ListenerLogicTest {
         assertFalse(cancel(
             chunkClaimed = true, flagAllows = true,
             bypasses = false, ownerOrMember = false,
-            triggererTriggered = false
+            isExplosionEvent = false
         ))
     }
 
@@ -133,7 +137,7 @@ class ListenerLogicTest {
     fun `unclaimed chunk overrides creative bypass setting`() {
         assertFalse(cancel(
             chunkClaimed = false, flagAllows = false,
-            creativeBypassActive = true, triggererTriggered = true
+            creativeBypassActive = true, isExplosionEvent = true
         ))
     }
 }
