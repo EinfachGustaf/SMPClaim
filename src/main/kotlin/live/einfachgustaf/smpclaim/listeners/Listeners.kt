@@ -4,7 +4,6 @@ import live.einfachgustaf.smpclaim.SMPClaim
 import live.einfachgustaf.smpclaim.chunk.ChunkPosition
 import net.axay.kspigot.event.listen
 import org.bukkit.entity.Entity
-import org.bukkit.entity.TNTPrimed
 import org.bukkit.entity.Player
 import org.bukkit.event.Cancellable
 import org.bukkit.event.block.*
@@ -230,8 +229,7 @@ class Listeners {
          */
         listen<EntityExplodeEvent> {
             // Return if the event should not be cancelled
-            val triggerer = (it.entity as? TNTPrimed)?.source as? Player
-            if (!check(it, canEntityExplode, ChunkPosition(it.entity.location.chunk), triggerer)) return@listen
+            if (!check(it, canEntityExplode, ChunkPosition(it.entity.location.chunk))) return@listen
             it.isCancelled = true
         }
 
