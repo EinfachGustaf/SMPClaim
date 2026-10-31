@@ -1,6 +1,8 @@
 package live.einfachgustaf.smpclaim.listeners
 
+import java.util.UUID
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -135,5 +137,97 @@ class ListenerLogicTest {
             chunkClaimed = false, flagAllows = false,
             creativeBypassActive = true, triggererTriggered = true
         ))
+    }
+
+    // --- Part 2: filterBlocksInForeignClaims tests ---
+
+    private val CHUNK_OWNED = live.einfachgustaf.smpclaim.chunk.ChunkPosition("world", 0, 0)
+    private val CHUNK_FOREIGN = live.einfachgustaf.smpclaim.chunk.ChunkPosition("world", 1, 1)
+    private val CHUNK_WILDERNESS = live.einfachgustaf.smpclaim.chunk.ChunkPosition("world", 5, 5)
+    private val ORIGIN = live.einfachgustaf.smpclaim.chunk.ChunkPosition("world", 0, 0)
+    private val TRIGGERER_UUID = UUID.fromString("00000000-0000-0000-0000-000000000001")
+
+    @Test
+    fun `filterBlocksInForeignClaims keeps blocks in own claimed chunk`() {
+        val mockIsClaimed: (live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { it == CHUNK_OWNED }
+        val mockHasAccess: (UUID, live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { uuid, cp ->
+            cp == CHUNK_OWNED && uuid == TRIGGERER_UUID
+        }
+
+        val result = filterBlocksInForeignClaims(
+            originChunkPos = ORIGIN,
+            triggererId = TRIGGERER_UUID,
+            blocks = listOf(CHUNK_OWNED),
+            isChunkClaimed = mockIsClaimed,
+            hasAccessOrIsOwner = mockHasAccess
+        )
+        assertEquals(listOf(CHUNK_OWNED), result)
+    }
+
+    @Test
+    fun `filterBlocksInForeignClaims removes blocks in foreign claim`() {
+        val mockIsClaimed: (live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { it == CHUNK_FOREIGN }
+        val mockHasAccess: (UUID, live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { _, _ -> false }
+
+        val result = filterBlocksInForeignClaims(
+            originChunkPos = ORIGIN,
+            triggererId = TRIGGERER_UUID,
+            blocks = listOf(CHUNK_FOREIGN),
+            isChunkClaimed = mockIsClaimed,
+            hasAccessOrIsOwner = mockHasAccess
+        )
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `filterBlocksInForeignClaims keeps blocks in wilderness`() {
+        val mockIsClaimed: (live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { false }
+        val mockHasAccess: (UUID, live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { _, _ -> false }
+
+        val result = filterBlocksInForeignClaims(
+            originChunkPos = ORIGIN,
+            triggererId = TRIGGERER_UUID,
+            blocks = listOf(CHUNK_WILDERNESS),
+            isChunkClaimed = mockIsClaimed,
+            hasAccessOrIsOwner = mockHasAccess
+        )
+        assertEquals(listOf(CHUNK_WILDERNESS), result)
+    }
+
+    @Test
+    fun `filterBlocksInForeignClaims mixed only foreign removed`() {
+        val mockIsClaimed: (live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = {
+            it == CHUNK_OWNED || it == CHUNK_FOREIGN
+        }
+        val mockHasAccess: (UUID, live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { uuid, cp ->
+            cp == CHUNK_OWNED && uuid == TRIGGERER_UUID
+        }
+
+        val result = filterBlocksInForeignClaims(
+            originChunkPos = ORIGIN,
+            triggererId = TRIGGERER_UUID,
+            blocks = listOf(CHUNK_OWNED, CHUNK_FOREIGN, CHUNK_WILDERNESS),
+            isChunkClaimed = mockIsClaimed,
+            hasAccessOrIsOwner = mockHasAccess
+        )
+        assertEquals(listOf(CHUNK_OWNED, CHUNK_WILDERNESS), result)
+    }
+
+    @Test
+    fun `filterBlocksInForeignClaims no triggerer keeps all claimed chunks conservatively`() {
+        val mockIsClaimed: (live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = {
+            it == CHUNK_OWNED || it == CHUNK_FOREIGN
+        }
+        val mockHasAccess: (UUID, live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { _, _ -> false }
+
+        val result = filterBlocksInForeignClaims(
+            originChunkPos = ORIGIN,
+            triggererId = null,
+            blocks = listOf(CHUNK_OWNED, CHUNK_FOREIGN),
+            isChunkClaimed = mockIsClaimed,
+            hasAccessOrIsOwner = mockHasAccess
+        )
+        // Without a triggerer, we conservatively keep all claimed-chunk blocks
+        assertEquals(listOf(CHUNK_OWNED, CHUNK_FOREIGN), result)
     }
 }

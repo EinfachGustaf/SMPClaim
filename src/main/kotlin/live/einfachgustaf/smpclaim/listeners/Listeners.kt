@@ -273,6 +273,12 @@ class Listeners {
             filterForeignClaims = st.filterForeignClaims,
             triggererTriggered = triggerer != null
         )
+
+        if (cancelled) {
+            event.isCancelled = true
+        } else if (st.filterForeignClaims) {
+            applyForeignFilterToBlocks(event.blockList(), pos, triggerer)
+        }
     }
 
     /**
@@ -463,4 +469,44 @@ internal fun shouldCancelClaimEvent(
     }
 
     return !(!chunkClaimed || alreadyCancelled || flagAllows || effectiveBypass || ownerOrMember)
+}
+
+/**
+ * Pure block-filtering function for explosion events (Part 2).
+ * Returns the subset of blocks that should remain after removing those in
+ * foreign claims. Does NOT depend on any Bukkit objects — only positions
+ * and functional lookups make it unit-testable.
+ *
+ * @param originChunkPos chunk where the explosion event originates
+ * @param triggererId    UUID of the player who triggered the event, or null (BlockExplodeEvent has no triggerer)
+ * @param blocks         list of block positions affected by the explosion
+ * @param isChunkClaimed lookup: does this chunk belong to any claim?
+ * @param hasAccessOrIsOwner lookup: does this player own or have access to this chunk?
+ * @return the filtered subset of [blocks] that should survive the explosion
+ *
+ * Logic:
+ * - Wildnis (unclaimed chunks): blocks always survive.
+ * - Owned claim: blocks survive if triggerer owns/is member of the claim.
+ *   When there is no triggerer (e.g. BlockExplodeEvent), blocks in claimed chunks
+ *   are kept because without knowing WHO caused the explosion we can't determine
+ *   ownership — conservatively preserving blast effects in claimed areas.
+ * - Foreign claim: blocks are removed (the core "filter-foreign-claims" behavior).
+ */
+internal fun filterBlocksInForeignClaims(
+    originChunkPos: ChunkPosition,
+    triggererId: java.util.UUID?,
+    blocks: List<ChunkPosition>,
+    isChunkClaimed: (ChunkPosition) -> Boolean,
+    hasAccessOrIsOwner: (java.util.UUID, ChunkPosition) -> Boolean
+): List<ChunkPosition> {
+    return blocks.filter { blockPos ->
+        val claimed = isChunkClaimed(blockPos)
+        if (!claimed) {
+            true // Wildnis: keep all blocks
+        } else {
+            // Claimed — check if triggerer owns or has access
+            // When no triggerer (BlockExplodeEvent), keep blocks (conservative)
+            triggererId == null || hasAccessOrIsOwner(triggererId, blockPos)
+        }
+    }
 }
