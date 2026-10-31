@@ -234,7 +234,7 @@ class Listeners {
          */
         listen<BlockExplodeEvent> {
             // Return if the event should not be cancelled
-            if (!check(it, canBlockExplode, ChunkPosition(it.block.chunk))) return@listen
+            if (!check(it, canBlockExplode, ChunkPosition(it.block.chunk), triggerer = null, isExplosionEvent = true)) return@listen
             it.isCancelled = true
         }
 
@@ -246,7 +246,7 @@ class Listeners {
         listen<EntityExplodeEvent> {
             // Return if the event should not be cancelled
             val triggerer = (it.entity as? TNTPrimed)?.source as? Player
-            if (!check(it, canEntityExplode, ChunkPosition(it.entity.location.chunk), triggerer)) return@listen
+            if (!check(it, canEntityExplode, ChunkPosition(it.entity.location.chunk), triggerer, isExplosionEvent = true)) return@listen
             it.isCancelled = true
         }
 
@@ -413,11 +413,10 @@ internal fun shouldCancelClaimEvent(
     // the config can disable it entirely.
     val effectiveBypass = permissionBypassEnabled && bypasses
 
-    // Owner-triggered explosions: only suppress the general owner-or-member
-    // protection gate when own-claim-explosion is enabled AND the event is
-    // actually an explosion. Non-explosion events still use the normal
-    // owner-or-member gate (backwards-compatible).
-    val ownerBlocked = ownerOrMember && isExplosionEvent && !ownerExplosionBypassEnabled
+    // Owner-or-member gate: for explosion events it only applies when
+    // own-claim-explosions are enabled, so the config switch is observable.
+    // Non-explosion events keep the normal owner-or-member gate.
+    val ownerAllowed = ownerOrMember && (!isExplosionEvent || ownerExplosionBypassEnabled)
 
-    return !(!chunkClaimed || alreadyCancelled || flagAllows || effectiveBypass || ownerBlocked || ownerOrMember)
+    return !(!chunkClaimed || alreadyCancelled || flagAllows || effectiveBypass || ownerAllowed)
 }
