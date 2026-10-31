@@ -3,7 +3,6 @@ package live.einfachgustaf.smpclaim.listeners
 import live.einfachgustaf.smpclaim.SMPClaim
 import live.einfachgustaf.smpclaim.chunk.ChunkPosition
 import net.axay.kspigot.event.listen
-import org.bukkit.GameMode
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.event.Cancellable
@@ -16,7 +15,10 @@ import org.bukkit.event.vehicle.VehicleEntityCollisionEvent
 import java.util.*
 
 class Listeners {
-    
+    companion object {
+        const val BYPASS_PERMISSION = "smpclaim.bypass"
+    }
+
     private val msg = SMPClaim.listenerConfig.config.getString("message") ?: "§cDas kannst du hier nicht machen."
     private val canEntityInteraction = SMPClaim.listenerConfig.config.getBoolean("canEntityInteraction")
     private val canEntityDamage = SMPClaim.listenerConfig.config.getBoolean("canEntityDamage")
@@ -263,7 +265,7 @@ class Listeners {
          */
         listen<BlockFertilizeEvent> {
             // Return if the event should not be cancelled
-            if (!check(it, canBlockFertilize, ChunkPosition(it.block.chunk))) return@listen
+            if (!check(it, canBlockFertilize, ChunkPosition(it.block.chunk), it.player)) return@listen
             it.isCancelled = true
         }
 
@@ -285,38 +287,28 @@ class Listeners {
      * @return `true` if the event should be cancelled, `false` otherwise.
      */
     private fun check(event: Cancellable, check: Boolean, player: Player): Boolean {
-        // Return false if the player is admin
-        if (player.gameMode == GameMode.CREATIVE) return false
-
-        val chunk = player.location.chunk
-
-        // Return false if the chunk is not claimed
-        if (!SMPClaim.dataHandler.isChunkClaimed(ChunkPosition(chunk))) return false
-
-        // Return false if the event is cancelled ||or it is allowed ||or the player is the owner of the chunk or has access to the chunk
-        if (event.isCancelled || check || isOwnerOrHasAccess(player.uniqueId, ChunkPosition(chunk))) return false
-
-        // else return true
-        return true
+        return check(event, check, ChunkPosition(player.location.chunk), player)
     }
 
     /**
      * Check if the event should be cancelled.
      * @param event The event to check.
      * @param check The boolean to check.
+     * @param chunk The chunk the event happens in.
+     * @param triggerer The player who triggered the event, if the event exposes one.
      *
      * @return `true` if the event should be cancelled, `false` otherwise.
      */
-    private fun check(event: Cancellable, check: Boolean, chunk: ChunkPosition): Boolean {
-
-        // Return false if the chunk is not claimed
-        if (!SMPClaim.dataHandler.isChunkClaimed(chunk)) return false
-
-        // Return false if the event is cancelled ||or it is allowed ||or the player is the owner of the chunk or has access to the chunk
-        if (event.isCancelled || check) return false
-
-        // else return true
-        return true
+    private fun check(event: Cancellable, check: Boolean, chunk: ChunkPosition, triggerer: Player? = null): Boolean {
+        val bypasses = triggerer?.hasPermission(BYPASS_PERMISSION) ?: false
+        val ownerOrMember = triggerer?.let { isOwnerOrHasAccess(it.uniqueId, chunk) } ?: false
+        return shouldCancelClaimEvent(
+            chunkClaimed = SMPClaim.dataHandler.isChunkClaimed(chunk),
+            flagAllows = check,
+            alreadyCancelled = event.isCancelled,
+            bypasses = bypasses,
+            ownerOrMember = ownerOrMember
+        )
     }
 
     /**
@@ -324,32 +316,13 @@ class Listeners {
      * @param event The event to check.
      * @param check The boolean to check.
      * @param entity The entity who triggered the event.
+     * @param entityMaybePlayer Whether the entity should be treated as a player when it is one.
      *
      * @return `true` if the event should be cancelled, `false` otherwise.
      */
     private fun check(event: Cancellable, check: Boolean, entity: Entity, entityMaybePlayer: Boolean): Boolean {
-
-        // Return false if the event should not be cancelled
-        if (check) return false
-
-        val chunk = entity.location.chunk
-
-        // Return false if the chunk is not claimed
-        if (!SMPClaim.dataHandler.isChunkClaimed(ChunkPosition(chunk))) return false
-
-        // Only if the entity is a player and should be treated as a player
-        if (entity is Player && entityMaybePlayer) {
-            val player: Player = entity
-
-            // Return false if the player is admin
-            if (player.gameMode == GameMode.CREATIVE) return false
-
-            // Return false if the event is cancelled ||or the player is the owner of the chunk or has access to the chunk
-            if (event.isCancelled || isOwnerOrHasAccess(player.uniqueId, ChunkPosition(chunk))) return false
-        }
-
-        // else return true
-        return true
+        val triggerer = if (entityMaybePlayer && entity is Player) entity else null
+        return check(event, check, ChunkPosition(entity.location.chunk), triggerer)
     }
 
     private fun sendMessage(player: Player) {
@@ -359,4 +332,19 @@ class Listeners {
         if (entity is Player) entity.sendMessage(msg)
     }
 
+}
+
+/**
+ * The actual claim decision, extracted from the listeners so it can be unit tested without a server.
+ *
+ * @return `true` if the listener should cancel the event, `false` if it should let it pass.
+ */
+internal fun shouldCancelClaimEvent(
+    chunkClaimed: Boolean,
+    flagAllows: Boolean,
+    alreadyCancelled: Boolean,
+    bypasses: Boolean,
+    ownerOrMember: Boolean
+): Boolean {
+    return !(!chunkClaimed || alreadyCancelled || flagAllows || bypasses || ownerOrMember)
 }
