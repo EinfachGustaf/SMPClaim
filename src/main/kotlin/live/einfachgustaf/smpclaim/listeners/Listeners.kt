@@ -3,6 +3,7 @@ package live.einfachgustaf.smpclaim.listeners
 import live.einfachgustaf.smpclaim.SMPClaim
 import live.einfachgustaf.smpclaim.chunk.ChunkPosition
 import net.axay.kspigot.event.listen
+import org.bukkit.GameMode
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.entity.TNTPrimed
@@ -23,16 +24,38 @@ class Listeners {
 
     private val msg = SMPClaim.listenerConfig.config.getString("message") ?: "§cDas kannst du hier nicht machen."
 
-    /**
-     * All listener behaviour knobs in one record so that the pure decision
-     * functions can be unit-tested without mocking anything.
-     */
-    data class Settings(
-        val creativeBypass: Boolean,
-        val permissionBypass: Boolean,
-        val ownClaimExplosion: Boolean,
-        val filterForeignClaims: Boolean
-    )
+    // --- Pre-computed config flags (cached at startup) ---
+
+    private val canEntityInteraction = SMPClaim.listenerConfig.config.getBoolean("canEntityInteraction")
+    private val canEntityDamage = SMPClaim.listenerConfig.config.getBoolean("canEntityDamage")
+    private val canCreatureSpawn = SMPClaim.listenerConfig.config.getBoolean("canCreatureSpawn")
+    private val canVehicleEntityCollision = SMPClaim.listenerConfig.config.getBoolean("canVehicleEntityCollision")
+    private val canBlockBreak = SMPClaim.listenerConfig.config.getBoolean("canBlockBreak")
+    private val canChangeBlock = SMPClaim.listenerConfig.config.getBoolean("canChangeBlock")
+    private val canBlockPlace = SMPClaim.listenerConfig.config.getBoolean("canBlockPlace")
+    private val canPlayerInteract = SMPClaim.listenerConfig.config.getBoolean("canPlayerInteract")
+    private val canProjectileLaunch = SMPClaim.listenerConfig.config.getBoolean("canProjectileLaunch")
+    private val canHangingBreakByEntity = SMPClaim.listenerConfig.config.getBoolean("canHangingBreakByEntity")
+    private val canHangingPlace = SMPClaim.listenerConfig.config.getBoolean("canHangingPlace")
+    private val canPlayerBucketFill = SMPClaim.listenerConfig.config.getBoolean("canPlayerBucketFill")
+    private val canPlayerBucketEmpty = SMPClaim.listenerConfig.config.getBoolean("canPlayerBucketEmpty")
+    private val canPlayerBucketEntity = SMPClaim.listenerConfig.config.getBoolean("canPlayerBucketEntity")
+    private val canPlayerLeashEntity = SMPClaim.listenerConfig.config.getBoolean("canPlayerLeashEntity")
+    private val canPlayerUnleashEntity = SMPClaim.listenerConfig.config.getBoolean("canPlayerUnleashEntity")
+    private val canPlayerArmorStandManipulate = SMPClaim.listenerConfig.config.getBoolean("canPlayerArmorStandManipulate")
+    private val canBlockExplode = SMPClaim.listenerConfig.config.getBoolean("canBlockExplode")
+    private val canEntityExplode = SMPClaim.listenerConfig.config.getBoolean("canEntityExplode")
+    private val canBlockSpread = SMPClaim.listenerConfig.config.getBoolean("canBlockSpread")
+    private val canBlockPistonExtend = SMPClaim.listenerConfig.config.getBoolean("canBlockPistonExtend")
+    private val canBlockPistonRetract = SMPClaim.listenerConfig.config.getBoolean("canBlockPistonRetract")
+    private val canBlockFertilize = SMPClaim.listenerConfig.config.getBoolean("canBlockFertilize")
+
+    // --- Configurable protection switches ---
+
+    private val creativeBypass = SMPClaim.listenerConfig.config.getBoolean("bypass.creative", false)
+    private val permissionBypassEnabled = SMPClaim.listenerConfig.config.getBoolean("bypass.permission", true)
+    private val ownClaimExplosion = SMPClaim.listenerConfig.config.getBoolean("explosions.own-claim", true)
+    private val filterForeignClaims = SMPClaim.listenerConfig.config.getBoolean("explosions.filter-foreign-claims", true)
 
     fun registerListeners() {
 
@@ -40,7 +63,8 @@ class Listeners {
          * Listener for when a player right-clicks on an entity.
          */
         listen<PlayerInteractEntityEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canEntityInteraction"), it.player)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canEntityInteraction, it.player)) return@listen
             sendMessage(it.player)
             it.isCancelled = true
         }
@@ -49,7 +73,8 @@ class Listeners {
          * Listener for when a entity is damaged by another entity/player
          */
         listen<EntityDamageByEntityEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canEntityDamage"), it.entity, true)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canEntityDamage, it.entity, true)) return@listen
             sendMessage(it.entity)
             it.isCancelled = true
         }
@@ -58,7 +83,8 @@ class Listeners {
          * Listener for when a creature spawns
          */
         listen<CreatureSpawnEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canCreatureSpawn"), it.entity, false)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canCreatureSpawn, it.entity, false)) return@listen
             it.isCancelled = true
         }
 
@@ -66,7 +92,8 @@ class Listeners {
          * Listener for when a vehicle collides with an entity
          */
         listen<VehicleEntityCollisionEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canVehicleEntityCollision"), it.entity, false)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canVehicleEntityCollision, it.entity, false)) return@listen
             it.isCancelled = true
         }
 
@@ -74,7 +101,8 @@ class Listeners {
          * Listener for when a player breaks a block
          */
         listen<BlockBreakEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canBlockBreak"), it.player)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canBlockBreak, it.player)) return@listen
             sendMessage(it.player)
             it.isCancelled = true
         }
@@ -83,7 +111,8 @@ class Listeners {
          * Listener for when an entity changes a block
          */
         listen<EntityChangeBlockEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canChangeBlock"), it.entity, true)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canChangeBlock, it.entity, true)) return@listen
             sendMessage(it.entity)
             it.isCancelled = true
         }
@@ -92,7 +121,8 @@ class Listeners {
          * Listener for when a player places a block
          */
         listen<BlockPlaceEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canBlockPlace"), it.player)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canBlockPlace, it.player)) return@listen
             sendMessage(it.player)
             it.isCancelled = true
         }
@@ -101,7 +131,8 @@ class Listeners {
          * Listener for when a player interacts with something
          */
         listen<PlayerInteractEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canPlayerInteract"), it.player)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canPlayerInteract, it.player)) return@listen
             sendMessage(it.player)
             it.isCancelled = true
         }
@@ -110,7 +141,8 @@ class Listeners {
          * Listener for when a player launches a projectile
          */
         listen<ProjectileLaunchEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canProjectileLaunch"), it.entity, true)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canProjectileLaunch, it.entity, true)) return@listen
             sendMessage(it.entity)
             it.isCancelled = true
         }
@@ -119,7 +151,8 @@ class Listeners {
          * Listener for when a player breaks a hanging entity
          */
         listen<HangingBreakByEntityEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canHangingBreakByEntity"), it.remover, true)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canHangingBreakByEntity, it.remover, true)) return@listen
             sendMessage(it.remover)
             it.isCancelled = true
         }
@@ -128,7 +161,8 @@ class Listeners {
          * Listener for when a hanging entity is placed
          */
         listen<HangingPlaceEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canHangingPlace"), it.entity, true)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canHangingPlace, it.entity, true)) return@listen
             sendMessage(it.entity)
             it.isCancelled = true
         }
@@ -137,7 +171,8 @@ class Listeners {
          * Listener for when a player fills a bucket
          */
         listen<PlayerBucketFillEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canPlayerBucketFill"), it.player)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canPlayerBucketFill, it.player)) return@listen
             sendMessage(it.player)
             it.isCancelled = true
         }
@@ -146,7 +181,8 @@ class Listeners {
          * Listener for when a player empties a bucket
          */
         listen<PlayerBucketEmptyEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canPlayerBucketEmpty"), it.player)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canPlayerBucketEmpty, it.player)) return@listen
             sendMessage(it.player)
             it.isCancelled = true
         }
@@ -155,7 +191,8 @@ class Listeners {
          * Listener for when a player picks up an entity with a bucket
          */
         listen<PlayerBucketEntityEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canPlayerBucketEntity"), it.player)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canPlayerBucketEntity, it.player)) return@listen
             sendMessage(it.player)
             it.isCancelled = true
         }
@@ -164,7 +201,8 @@ class Listeners {
          * Listener for when a player leashes an entity
          */
         listen<PlayerLeashEntityEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canPlayerLeashEntity"), it.player)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canPlayerLeashEntity, it.player)) return@listen
             sendMessage(it.player)
             it.isCancelled = true
         }
@@ -173,7 +211,8 @@ class Listeners {
          * Listener for when a player unleashes an entity
          */
         listen<PlayerUnleashEntityEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canPlayerUnleashEntity"), it.player)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canPlayerUnleashEntity, it.player)) return@listen
             sendMessage(it.player)
             it.isCancelled = true
         }
@@ -182,7 +221,8 @@ class Listeners {
          * Listener for when a player manipulates an armor stand
          */
         listen<PlayerArmorStandManipulateEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canPlayerArmorStandManipulate"), it.player)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canPlayerArmorStandManipulate, it.player)) return@listen
             sendMessage(it.player)
             it.isCancelled = true
         }
@@ -192,7 +232,12 @@ class Listeners {
          * No triggerer source — relies on chunk-level check + owner-or-member.
          */
         listen<BlockExplodeEvent> {
-            handleBlockExplode(it)
+            if (!check(it, canBlockExplode, ChunkPosition(it.block.chunk))) return@listen
+            if (filterForeignClaims) {
+                applyForeignFilterToBlocks(it.blockList(), ChunkPosition(it.block.chunk), null)
+            } else {
+                it.isCancelled = true
+            }
         }
 
         /**
@@ -201,14 +246,21 @@ class Listeners {
          * bypass logic plus block filtering for foreign claims.
          */
         listen<EntityExplodeEvent> {
-            handleEntityExplode(it)
+            val triggerer = (it.entity as? TNTPrimed)?.source as? Player
+            if (!check(it, canEntityExplode, ChunkPosition(it.entity.location.chunk), triggerer)) return@listen
+            if (filterForeignClaims) {
+                applyForeignFilterToBlocks(it.blockList(), ChunkPosition(it.entity.location.chunk), triggerer)
+            } else {
+                it.isCancelled = true
+            }
         }
 
         /**
          * Listener for when a block spreads
          */
         listen<BlockSpreadEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canBlockSpread"), ChunkPosition(it.source.chunk))) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canBlockSpread, ChunkPosition(it.source.chunk))) return@listen
             it.isCancelled = true
         }
 
@@ -216,7 +268,8 @@ class Listeners {
          * Listener for when a block is pushed by a piston
          */
         listen<BlockPistonExtendEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canBlockPistonExtend"), ChunkPosition(it.block.chunk))) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canBlockPistonExtend, ChunkPosition(it.block.chunk))) return@listen
             it.isCancelled = true
         }
 
@@ -224,7 +277,8 @@ class Listeners {
          * Listener for when a block is pulled by a piston
          */
         listen<BlockPistonRetractEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canBlockPistonRetract"), ChunkPosition(it.block.chunk))) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canBlockPistonRetract, ChunkPosition(it.block.chunk))) return@listen
             it.isCancelled = true
         }
 
@@ -232,131 +286,19 @@ class Listeners {
          * Listener for when a block is fertilized
          */
         listen<BlockFertilizeEvent> {
-            if (!check(it, SMPClaim.listenerConfig.config.getBoolean("canBlockFertilize"), ChunkPosition(it.block.chunk), it.player)) return@listen
+            // Return if the event should not be cancelled
+            if (!check(it, canBlockFertilize, ChunkPosition(it.block.chunk), it.player)) return@listen
             it.isCancelled = true
         }
 
     }
 
 
-    // --- EXPLOSION HANDLERS --- //
-
-    /**
-     * BlockExplodeEvent handler: respects claim ownership via shouldCancelClaimEvent
-     * (owner/members allowed through), then optionally filters out blocks in
-     * foreign-claim chunks instead of cancelling the event entirely.
-     */
-    private fun handleBlockExplode(event: BlockExplodeEvent) {
-        val flagAllows = SMPClaim.listenerConfig.config.getBoolean("canBlockExplode")
-        val pos = ChunkPosition(event.block.location.chunk)
-        val triggerer: Player? = null
-        val alreadyCancelled = event.isCancelled
-
-        val st = settings()
-        // Creative bypass
-        if (st.creativeBypass && triggerer != null && triggerer.gameMode == org.bukkit.GameMode.CREATIVE) {
-            return
-        }
-
-        val bypasses = !st.permissionBypass || (triggerer?.hasPermission(BYPASS_PERMISSION) ?: false)
-        val ownerOrMember = triggerer?.let { isOwnerOrHasAccess(it.uniqueId, pos) } ?: false
-
-        val cancelled = shouldCancelClaimEvent(
-            chunkClaimed = SMPClaim.dataHandler.isChunkClaimed(pos),
-            flagAllows = flagAllows,
-            alreadyCancelled = alreadyCancelled,
-            bypasses = bypasses,
-            ownerOrMember = ownerOrMember,
-            creativeBypassActive = st.creativeBypass && triggerer != null && triggerer.gameMode == org.bukkit.GameMode.CREATIVE,
-            permissionBypassEnabled = st.permissionBypass,
-            ownerExplosionBypassEnabled = st.ownClaimExplosion,
-            filterForeignClaims = st.filterForeignClaims,
-            triggererTriggered = triggerer != null
-        )
-
-        if (cancelled) {
-            event.isCancelled = true
-        } else if (st.filterForeignClaims) {
-            applyForeignFilterToBlocks(event.blockList(), pos, triggerer)
-        }
-    }
-
-    /**
-     * EntityExplodeEvent handler: extracts triggerer from TNTPrimed.source,
-     * applies full ownership / bypass logic including creative and permission checks.
-     * Supports block-level filtering for foreign claims.
-     */
-    private fun handleEntityExplode(event: EntityExplodeEvent) {
-        val triggerer = (event.entity as? TNTPrimed)?.source as? Player
-        val flagAllows = SMPClaim.listenerConfig.config.getBoolean("canEntityExplode")
-        val pos = ChunkPosition(event.entity.location.chunk)
-        val alreadyCancelled = event.isCancelled
-
-        val st = settings()
-        // Creative-bypass: allow creative players to ignore claim protection
-        if (st.creativeBypass && triggerer != null && triggerer.gameMode == org.bukkit.GameMode.CREATIVE) {
-            return
-        }
-
-        val bypasses = !st.permissionBypass || (triggerer?.hasPermission(BYPASS_PERMISSION) ?: false)
-        val ownerOrMember = triggerer?.let { isOwnerOrHasAccess(it.uniqueId, pos) } ?: false
-
-        val cancelled = shouldCancelClaimEvent(
-            chunkClaimed = SMPClaim.dataHandler.isChunkClaimed(pos),
-            flagAllows = flagAllows,
-            alreadyCancelled = alreadyCancelled,
-            bypasses = bypasses,
-            ownerOrMember = ownerOrMember,
-            creativeBypassActive = st.creativeBypass && triggerer != null && triggerer.gameMode == org.bukkit.GameMode.CREATIVE,
-            permissionBypassEnabled = st.permissionBypass,
-            ownerExplosionBypassEnabled = st.ownClaimExplosion,
-            filterForeignClaims = st.filterForeignClaims,
-            triggererTriggered = triggerer != null
-        )
-
-        if (cancelled) {
-            event.isCancelled = true
-        } else if (st.filterForeignClaims) {
-            applyForeignFilterToBlocks(event.blockList(), pos, triggerer)
-        }
-    }
-
-    /**
-     * Filter [blocks] in-place: remove any block whose chunk falls inside a
-     * foreign claim (claimed by someone else whom the triggerer does not own/access).
-     */
-    private fun applyForeignFilterToBlocks(
-        blocks: MutableCollection<org.bukkit.block.Block>,
-        originChunk: ChunkPosition,
-        triggerer: Player?
-    ) {
-        val filtered = blocks.filter { block ->
-            val bcPos = ChunkPosition(block.location.chunk)
-            val isClaimed = SMPClaim.dataHandler.isChunkClaimed(bcPos)
-            if (!isClaimed) {
-                true  // Wildnis: keep
-            } else {
-                // Claimed — keep only if triggerer owns or has access
-                triggerer == null || isOwnerOrHasAccess(triggerer.uniqueId, bcPos)
-            }
-        }
-        blocks.clear()
-        blocks.addAll(filtered)
-    }
 
     // --- HELPER METHODS --- //
 
     private fun isOwnerOrHasAccess(player: UUID, chunk: ChunkPosition): Boolean {
         return SMPClaim.dataHandler.isChunkClaimed(chunk) && SMPClaim.dataHandler.hasAccessOrIsOwner(player, chunk)
-    }
-
-    private fun settings(): Settings {
-        return Settings(
-            creativeBypass = SMPClaim.listenerConfig.config.getBoolean("bypass.creative", false),
-            permissionBypass = SMPClaim.listenerConfig.config.getBoolean("bypass.permission", true),
-            ownClaimExplosion = SMPClaim.listenerConfig.config.getBoolean("explosions.own-claim", true),
-            filterForeignClaims = SMPClaim.listenerConfig.config.getBoolean("explosions.filter-foreign-claims", true)
-        )
     }
 
     /**
@@ -380,23 +322,26 @@ class Listeners {
      *
      * @return `true` if the event should be cancelled, `false` otherwise.
      */
-    private fun check(event: Cancellable, check: Boolean, chunk: ChunkPosition, triggerer: Player? = null): Boolean {
-        val bypasses = triggerer?.hasPermission(BYPASS_PERMISSION) ?: false
+    private fun check(
+        event: Cancellable,
+        check: Boolean,
+        chunk: ChunkPosition,
+        triggerer: Player? = null
+    ): Boolean {
+        val rawPermission = triggerer?.hasPermission(BYPASS_PERMISSION) ?: false
+        val effectiveBypasses = permissionBypassEnabled && rawPermission
         val ownerOrMember = triggerer?.let { isOwnerOrHasAccess(it.uniqueId, chunk) } ?: false
-        val st = settings()
-        // creativeBypassActive = config switch AND player actually in creative mode
-        val creativeActive = st.creativeBypass && triggerer != null && triggerer.gameMode == org.bukkit.GameMode.CREATIVE
+        val creativeActive = creativeBypass && triggerer != null && triggerer.gameMode == GameMode.CREATIVE
         return shouldCancelClaimEvent(
             chunkClaimed = SMPClaim.dataHandler.isChunkClaimed(chunk),
             flagAllows = check,
             alreadyCancelled = event.isCancelled,
-            bypasses = bypasses,
+            bypasses = rawPermission,
             ownerOrMember = ownerOrMember,
             creativeBypassActive = creativeActive,
-            permissionBypassEnabled = st.permissionBypass,
-            ownerExplosionBypassEnabled = st.ownClaimExplosion,
-            filterForeignClaims = st.filterForeignClaims,
-            triggererTriggered = triggerer != null
+            permissionBypassEnabled = this.permissionBypassEnabled,
+            ownerExplosionBypassEnabled = this.ownClaimExplosion,
+            isExplosionEvent = false
         )
     }
 
@@ -414,6 +359,32 @@ class Listeners {
         return check(event, check, ChunkPosition(entity.location.chunk), triggerer)
     }
 
+    /**
+     * Filter [blocks] in-place: remove any block whose chunk falls inside a
+     * foreign claim (claimed by someone else whom the triggerer does not own/access).
+     *
+     * No triggerer means unknown cause — conservatively remove all claimed-chunk blocks.
+     */
+    private fun applyForeignFilterToBlocks(
+        blocks: MutableCollection<org.bukkit.block.Block>,
+        originChunk: ChunkPosition,
+        triggerer: Player?
+    ) {
+        val triggererUuid = triggerer?.uniqueId
+        val positions = blocks.map { ChunkPosition(it.location.chunk) }
+        val kept = filterBlocksInForeignClaims(
+            originChunkPos = originChunk,
+            triggererId = triggererUuid,
+            blocks = positions,
+            isChunkClaimed = { SMPClaim.dataHandler.isChunkClaimed(it) },
+            hasAccessOrIsOwner = { uuid, pos -> isOwnerOrHasAccess(uuid, pos) }
+        )
+        blocks.clear()
+        val keptPositions = kept.toSet()
+        // Re-add only blocks whose chunk is in the kept set
+        blocks.addAll(blocks.toList().filter { keptPositions.contains(ChunkPosition(it.location.chunk)) })
+    }
+
     private fun sendMessage(player: Player) {
         player.sendMessage(msg)
     }
@@ -429,13 +400,13 @@ class Listeners {
  * @param chunkClaimed          does the relevant chunk have an active claim?
  * @param flagAllows            does the config-flag permit this action type?
  * @param alreadyCancelled      has some other handler already cancelled the event?
- * @param bypasses              did the triggerer hold the bypass permission?
+ * @param bypasses              raw hasPermission result passed by the caller.
  * @param ownerOrMember         is the triggerer owner or member of the claim?
- * @param creativeBypassEnabled when true, creative-mode players are exempt from claims
- * @param ownerExplosionBypassEnabled when true and triggerer-triggered, explosions fired by
- *                                    owners/members of the claim are NOT cancelled
- * @param filterForeignClaims   when true, callers may filter blocks instead of cancelling
- * @param triggererTriggered    whether the event has a recognised player triggerer
+ * @param creativeBypassActive  when true, creative-mode players are exempt from claims
+ * @param permissionBypassEnabled when true and [bypasses] is true, the event passes
+ * @param ownerExplosionBypassEnabled when true and [isExplosionEvent] is true,
+ *                                    owner/members triggering explosions bypass cancellation
+ * @param isExplosionEvent      whether this is an explosion-type event
  *
  * @return `true` if the listener should cancel the event, `false` otherwise.
  */
@@ -448,8 +419,7 @@ internal fun shouldCancelClaimEvent(
     creativeBypassActive: Boolean = false,
     permissionBypassEnabled: Boolean = true,
     ownerExplosionBypassEnabled: Boolean = true,
-    filterForeignClaims: Boolean = true,
-    triggererTriggered: Boolean = false
+    isExplosionEvent: Boolean = false
 ): Boolean {
     // Creative-mode bypass: active when BOTH the config switch is on AND
     // the triggering player is in creative mode. Combined in one param to keep
@@ -462,13 +432,13 @@ internal fun shouldCancelClaimEvent(
     // the config can disable it entirely.
     val effectiveBypass = permissionBypassEnabled && bypasses
 
-    // Owner-triggered explosions: if the triggerer owns/is a member AND this is
-    // an explosion-type event, skip cancellation when own-claim-explosion is true.
-    if (ownerExplosionBypassEnabled && ownerOrMember && triggererTriggered) {
-        return false
-    }
+    // Owner-triggered explosions: only suppress the general owner-or-member
+    // protection gate when own-claim-explosion is enabled AND the event is
+    // actually an explosion. Non-explosion events still use the normal
+    // owner-or-member gate (backwards-compatible).
+    val ownerBlocked = ownerOrMember && isExplosionEvent && !ownerExplosionBypassEnabled
 
-    return !(!chunkClaimed || alreadyCancelled || flagAllows || effectiveBypass || ownerOrMember)
+    return !(!chunkClaimed || alreadyCancelled || flagAllows || effectiveBypass || ownerBlocked || ownerOrMember)
 }
 
 /**
@@ -484,13 +454,13 @@ internal fun shouldCancelClaimEvent(
  * @param hasAccessOrIsOwner lookup: does this player own or have access to this chunk?
  * @return the filtered subset of [blocks] that should survive the explosion
  *
- * Logic:
+ * Logic (Lead decision):
  * - Wildnis (unclaimed chunks): blocks always survive.
  * - Owned claim: blocks survive if triggerer owns/is member of the claim.
- *   When there is no triggerer (e.g. BlockExplodeEvent), blocks in claimed chunks
- *   are kept because without knowing WHO caused the explosion we can't determine
- *   ownership — conservatively preserving blast effects in claimed areas.
  * - Foreign claim: blocks are removed (the core "filter-foreign-claims" behavior).
+ * - No triggerer: ALL blocks in claimed chunks are removed — without knowing WHO
+ *   caused the explosion we protect claimed areas by assuming they might be foreign.
+ *   This prevents unowned explosions from destroying another player's property.
  */
 internal fun filterBlocksInForeignClaims(
     originChunkPos: ChunkPosition,
@@ -504,9 +474,9 @@ internal fun filterBlocksInForeignClaims(
         if (!claimed) {
             true // Wildnis: keep all blocks
         } else {
-            // Claimed — check if triggerer owns or has access
-            // When no triggerer (BlockExplodeEvent), keep blocks (conservative)
-            triggererId == null || hasAccessOrIsOwner(triggererId, blockPos)
+            // Claimed — keep only if triggerer owns or has access.
+            // Without a triggerer we cannot verify ownership → remove (conservative safety).
+            triggererId != null && hasAccessOrIsOwner(triggererId, blockPos)
         }
     }
 }

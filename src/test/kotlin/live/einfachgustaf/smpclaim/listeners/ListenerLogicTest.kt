@@ -1,13 +1,24 @@
 package live.einfachgustaf.smpclaim.listeners
 
-import java.util.UUID
+import live.einfachgustaf.smpclaim.chunk.ChunkPosition
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import java.util.UUID
 
 class ListenerLogicTest {
 
+    // --- Constants for filter tests ---
+    private val CHUNK_OWNED = ChunkPosition("world", 0, 0)
+    private val CHUNK_FOREIGN = ChunkPosition("world", 1, 0)
+    private val CHUNK_WILDERNESS = ChunkPosition("world", 5, 5)
+    private val TRIGGERER_UUID = UUID.randomUUID()
+
+    /**
+     * Helper for shouldCancelClaimEvent — uses named parameters so callers don't
+     * accidentally hit wrong defaults when the signature grows.
+     */
     private fun cancel(
         chunkClaimed: Boolean = true,
         flagAllows: Boolean = false,
@@ -17,11 +28,17 @@ class ListenerLogicTest {
         creativeBypassActive: Boolean = false,
         permissionBypassEnabled: Boolean = true,
         ownerExplosionBypassEnabled: Boolean = true,
-        filterForeignClaims: Boolean = true,
-        triggererTriggered: Boolean = false
+        isExplosionEvent: Boolean = false
     ): Boolean = shouldCancelClaimEvent(
-        chunkClaimed, flagAllows, alreadyCancelled, bypasses, ownerOrMember,
-        creativeBypassActive, permissionBypassEnabled, ownerExplosionBypassEnabled, filterForeignClaims, triggererTriggered
+        chunkClaimed = chunkClaimed,
+        flagAllows = flagAllows,
+        alreadyCancelled = alreadyCancelled,
+        bypasses = bypasses,
+        ownerOrMember = ownerOrMember,
+        creativeBypassActive = creativeBypassActive,
+        permissionBypassEnabled = permissionBypassEnabled,
+        ownerExplosionBypassEnabled = ownerExplosionBypassEnabled,
+        isExplosionEvent = isExplosionEvent
     )
 
     @Test
@@ -54,7 +71,7 @@ class ListenerLogicTest {
         assertFalse(cancel(alreadyCancelled = true))
     }
 
-    // --- New tests for configurable protection (Part 1) ---
+    // --- New tests for configurable protection (Part 1: Listeners.kt switches) ---
 
     /** Creative-mode players are protected by claims just like anyone else
      *  unless bypass-creative is explicitly enabled. */
@@ -63,7 +80,7 @@ class ListenerLogicTest {
         assertTrue(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = false, ownerOrMember = false,
-            triggererTriggered = true
+            isExplosionEvent = true
         ))
     }
 
@@ -72,7 +89,7 @@ class ListenerLogicTest {
         assertFalse(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = false, ownerOrMember = false,
-            creativeBypassActive = true, triggererTriggered = true
+            creativeBypassActive = true, isExplosionEvent = true
         ))
     }
 
@@ -87,8 +104,7 @@ class ListenerLogicTest {
         assertTrue(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = true, ownerOrMember = false,
-            permissionBypassEnabled = false,
-            triggererTriggered = true
+            permissionBypassEnabled = false, isExplosionEvent = true
         ))
     }
 
@@ -97,7 +113,7 @@ class ListenerLogicTest {
         assertFalse(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = false, ownerOrMember = true,
-            triggererTriggered = true
+            isExplosionEvent = true
         ))
     }
 
@@ -108,8 +124,7 @@ class ListenerLogicTest {
         assertFalse(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = false, ownerOrMember = true,
-            ownerExplosionBypassEnabled = false,
-            triggererTriggered = true
+            ownerExplosionBypassEnabled = false, isExplosionEvent = true
         ))
     }
 
@@ -118,7 +133,7 @@ class ListenerLogicTest {
         assertTrue(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = false, ownerOrMember = false,
-            triggererTriggered = true
+            isExplosionEvent = true
         ))
     }
 
@@ -127,7 +142,7 @@ class ListenerLogicTest {
         assertFalse(cancel(
             chunkClaimed = true, flagAllows = true,
             bypasses = false, ownerOrMember = false,
-            triggererTriggered = false
+            isExplosionEvent = false
         ))
     }
 
@@ -135,27 +150,21 @@ class ListenerLogicTest {
     fun `unclaimed chunk overrides creative bypass setting`() {
         assertFalse(cancel(
             chunkClaimed = false, flagAllows = false,
-            creativeBypassActive = true, triggererTriggered = true
+            creativeBypassActive = true, isExplosionEvent = true
         ))
     }
 
-    // --- Part 2: filterBlocksInForeignClaims tests ---
-
-    private val CHUNK_OWNED = live.einfachgustaf.smpclaim.chunk.ChunkPosition("world", 0, 0)
-    private val CHUNK_FOREIGN = live.einfachgustaf.smpclaim.chunk.ChunkPosition("world", 1, 1)
-    private val CHUNK_WILDERNESS = live.einfachgustaf.smpclaim.chunk.ChunkPosition("world", 5, 5)
-    private val ORIGIN = live.einfachgustaf.smpclaim.chunk.ChunkPosition("world", 0, 0)
-    private val TRIGGERER_UUID = UUID.fromString("00000000-0000-0000-0000-000000000001")
+    // --- Tests for filterBlocksInForeignClaims (Part 2: block-level filtering) ---
 
     @Test
-    fun `filterBlocksInForeignClaims keeps blocks in own claimed chunk`() {
-        val mockIsClaimed: (live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { it == CHUNK_OWNED }
-        val mockHasAccess: (UUID, live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { uuid, cp ->
+    fun `filterBlocksInForeignClaims keeps blocks in owned claim with matching triggerer`() {
+        val mockIsClaimed: (ChunkPosition) -> Boolean = { it == CHUNK_OWNED }
+        val mockHasAccess: (UUID, ChunkPosition) -> Boolean = { uuid, cp ->
             cp == CHUNK_OWNED && uuid == TRIGGERER_UUID
         }
 
         val result = filterBlocksInForeignClaims(
-            originChunkPos = ORIGIN,
+            originChunkPos = CHUNK_OWNED,
             triggererId = TRIGGERER_UUID,
             blocks = listOf(CHUNK_OWNED),
             isChunkClaimed = mockIsClaimed,
@@ -166,11 +175,11 @@ class ListenerLogicTest {
 
     @Test
     fun `filterBlocksInForeignClaims removes blocks in foreign claim`() {
-        val mockIsClaimed: (live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { it == CHUNK_FOREIGN }
-        val mockHasAccess: (UUID, live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { _, _ -> false }
+        val mockIsClaimed: (ChunkPosition) -> Boolean = { it == CHUNK_FOREIGN }
+        val mockHasAccess: (UUID, ChunkPosition) -> Boolean = { _, _ -> false }
 
         val result = filterBlocksInForeignClaims(
-            originChunkPos = ORIGIN,
+            originChunkPos = CHUNK_OWNED,
             triggererId = TRIGGERER_UUID,
             blocks = listOf(CHUNK_FOREIGN),
             isChunkClaimed = mockIsClaimed,
@@ -181,11 +190,11 @@ class ListenerLogicTest {
 
     @Test
     fun `filterBlocksInForeignClaims keeps blocks in wilderness`() {
-        val mockIsClaimed: (live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { false }
-        val mockHasAccess: (UUID, live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { _, _ -> false }
+        val mockIsClaimed: (ChunkPosition) -> Boolean = { false }
+        val mockHasAccess: (UUID, ChunkPosition) -> Boolean = { _, _ -> false }
 
         val result = filterBlocksInForeignClaims(
-            originChunkPos = ORIGIN,
+            originChunkPos = CHUNK_OWNED,
             triggererId = TRIGGERER_UUID,
             blocks = listOf(CHUNK_WILDERNESS),
             isChunkClaimed = mockIsClaimed,
@@ -196,15 +205,15 @@ class ListenerLogicTest {
 
     @Test
     fun `filterBlocksInForeignClaims mixed only foreign removed`() {
-        val mockIsClaimed: (live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = {
+        val mockIsClaimed: (ChunkPosition) -> Boolean = {
             it == CHUNK_OWNED || it == CHUNK_FOREIGN
         }
-        val mockHasAccess: (UUID, live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { uuid, cp ->
+        val mockHasAccess: (UUID, ChunkPosition) -> Boolean = { uuid, cp ->
             cp == CHUNK_OWNED && uuid == TRIGGERER_UUID
         }
 
         val result = filterBlocksInForeignClaims(
-            originChunkPos = ORIGIN,
+            originChunkPos = CHUNK_OWNED,
             triggererId = TRIGGERER_UUID,
             blocks = listOf(CHUNK_OWNED, CHUNK_FOREIGN, CHUNK_WILDERNESS),
             isChunkClaimed = mockIsClaimed,
@@ -213,21 +222,44 @@ class ListenerLogicTest {
         assertEquals(listOf(CHUNK_OWNED, CHUNK_WILDERNESS), result)
     }
 
+    /** Without a triggerer we cannot verify ownership → remove ALL blocks in claimed chunks.
+     *  Only wilderness survives. This is the conservative safety behavior. */
     @Test
-    fun `filterBlocksInForeignClaims no triggerer keeps all claimed chunks conservatively`() {
-        val mockIsClaimed: (live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = {
+    fun `filterBlocksInForeignClaims no triggerer removes all claimed-chunk blocks keeps wildness`() {
+        val mockIsClaimed: (ChunkPosition) -> Boolean = {
             it == CHUNK_OWNED || it == CHUNK_FOREIGN
         }
-        val mockHasAccess: (UUID, live.einfachgustaf.smpclaim.chunk.ChunkPosition) -> Boolean = { _, _ -> false }
+        val mockHasAccess: (UUID, ChunkPosition) -> Boolean = { _, _ -> false }
 
         val result = filterBlocksInForeignClaims(
-            originChunkPos = ORIGIN,
+            originChunkPos = CHUNK_OWNED,
             triggererId = null,
-            blocks = listOf(CHUNK_OWNED, CHUNK_FOREIGN),
+            blocks = listOf(CHUNK_OWNED, CHUNK_FOREIGN, CHUNK_WILDERNESS),
             isChunkClaimed = mockIsClaimed,
             hasAccessOrIsOwner = mockHasAccess
         )
-        // Without a triggerer, we conservatively keep all claimed-chunk blocks
-        assertEquals(listOf(CHUNK_OWNED, CHUNK_FOREIGN), result)
+        assertEquals(listOf(CHUNK_WILDERNESS), result)
+    }
+
+    /** When a bypass is active (creative or permission), no filtering should occur at all.
+     *  The caller decides whether to cancel entirely or let the event pass unchanged. */
+    @Test
+    fun `filterBlocksInForeignClaims owner as triggerer keeps all claimed blocks`() {
+        val mockIsClaimed: (ChunkPosition) -> Boolean = {
+            it == CHUNK_OWNED || it == CHUNK_FOREIGN
+        }
+        val mockHasAccess: (UUID, ChunkPosition) -> Boolean = { uuid, cp ->
+            cp == CHUNK_OWNED && uuid == TRIGGERER_UUID
+        }
+
+        val result = filterBlocksInForeignClaims(
+            originChunkPos = CHUNK_OWNED,
+            triggererId = TRIGGERER_UUID,
+            blocks = listOf(CHUNK_OWNED, CHUNK_FOREIGN, CHUNK_WILDERNESS),
+            isChunkClaimed = mockIsClaimed,
+            hasAccessOrIsOwner = mockHasAccess
+        )
+        // Owner triggers: owns their chunks, foreign is filtered out, wildness stays
+        assertEquals(listOf(CHUNK_OWNED, CHUNK_WILDERNESS), result)
     }
 }
