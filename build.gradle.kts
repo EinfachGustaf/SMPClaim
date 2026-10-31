@@ -28,6 +28,8 @@ dependencies {
         exclude(group = "com.google.code.gson")
         exclude(group = "it.unimi.dsi")
     }
+
+    testImplementation(kotlin("test"))
 }
 
 tasks {
@@ -54,4 +56,8 @@ tasks {
 
 kotlin {
     jvmToolchain(21)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
