@@ -12,6 +12,8 @@ import live.einfachgustaf.smpclaim.utils.WorldGuardApi
 import live.einfachgustaf.smpclaim.utils.configs.ListenerConfig
 import net.axay.kspigot.main.KSpigot
 import org.bukkit.Bukkit
+import org.bukkit.permissions.Permission
+import org.bukkit.permissions.PermissionDefault
 
 class SMPClaim : KSpigot() {
 
@@ -49,6 +51,13 @@ class SMPClaim : KSpigot() {
         if (!canEnable) {
             Bukkit.getPluginManager().disablePlugin(this)
             return
+        }
+
+        // Everyone may claim unless a permissions plugin says otherwise; undeclared permissions
+        // would default to operators only.
+        val pluginManager = Bukkit.getPluginManager()
+        if (pluginManager.getPermission(ClaimCommand.PERMISSION) == null) {
+            pluginManager.addPermission(Permission(ClaimCommand.PERMISSION, "Allows claiming chunks", PermissionDefault.TRUE))
         }
 
         listenerConfig = ListenerConfig()

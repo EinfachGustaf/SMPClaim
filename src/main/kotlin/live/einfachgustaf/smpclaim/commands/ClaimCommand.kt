@@ -8,9 +8,11 @@ import net.axay.kspigot.commands.runs
 
 object ClaimCommand {
 
+    const val PERMISSION = "smpclaim.claim"
+
     fun register() {
         command("claim") {
-            requiresPermission("smpclaim.claim")
+            requiresPermission(PERMISSION)
             runs {
                 if (SMPClaim.dataHandler.addClaimedChunk(ChunkPosition(this.player.chunk), this.player.uniqueId)) {
                     this.player.sendMessage("Chunk claimed!")
