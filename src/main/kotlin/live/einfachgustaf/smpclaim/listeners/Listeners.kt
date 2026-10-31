@@ -232,7 +232,7 @@ class Listeners {
          * No triggerer source — relies on chunk-level check + owner-or-member.
          */
         listen<BlockExplodeEvent> {
-            if (!check(it, canBlockExplode, ChunkPosition(it.block.chunk))) return@listen
+            if (!check(it, canBlockExplode, ChunkPosition(it.block.chunk), triggerer = null, isExplosionEvent = true)) return@listen
             if (filterForeignClaims) {
                 applyForeignFilterToBlocks(it.blockList(), ChunkPosition(it.block.chunk), null)
             } else {
@@ -247,11 +247,13 @@ class Listeners {
          */
         listen<EntityExplodeEvent> {
             val triggerer = (it.entity as? TNTPrimed)?.source as? Player
-            if (!check(it, canEntityExplode, ChunkPosition(it.entity.location.chunk), triggerer)) return@listen
-            if (filterForeignClaims) {
+            if (!check(it, canEntityExplode, ChunkPosition(it.entity.location.chunk), triggerer, isExplosionEvent = true)) return@listen
+            // Bypass-active triggerers skip filtering entirely: their explosions
+            // keep full vanilla block destruction.
+            val bypassActive = (creativeBypass && triggerer != null && triggerer.gameMode == GameMode.CREATIVE) ||
+                (permissionBypassEnabled && triggerer?.hasPermission(BYPASS_PERMISSION) == true)
+            if (filterForeignClaims && !bypassActive) {
                 applyForeignFilterToBlocks(it.blockList(), ChunkPosition(it.entity.location.chunk), triggerer)
-            } else {
-                it.isCancelled = true
             }
         }
 
@@ -328,6 +330,19 @@ class Listeners {
         chunk: ChunkPosition,
         triggerer: Player? = null
     ): Boolean {
+        return check(event, check, chunk, triggerer, isExplosionEvent = false)
+    }
+
+    /**
+     * Full check used by both regular listeners and explosion handlers.
+     */
+    private fun check(
+        event: Cancellable,
+        check: Boolean,
+        chunk: ChunkPosition,
+        triggerer: Player?,
+        isExplosionEvent: Boolean
+    ): Boolean {
         val rawPermission = triggerer?.hasPermission(BYPASS_PERMISSION) ?: false
         val effectiveBypasses = permissionBypassEnabled && rawPermission
         val ownerOrMember = triggerer?.let { isOwnerOrHasAccess(it.uniqueId, chunk) } ?: false
@@ -341,7 +356,7 @@ class Listeners {
             creativeBypassActive = creativeActive,
             permissionBypassEnabled = this.permissionBypassEnabled,
             ownerExplosionBypassEnabled = this.ownClaimExplosion,
-            isExplosionEvent = false
+            isExplosionEvent = isExplosionEvent
         )
     }
 
@@ -371,18 +386,17 @@ class Listeners {
         triggerer: Player?
     ) {
         val triggererUuid = triggerer?.uniqueId
-        val positions = blocks.map { ChunkPosition(it.location.chunk) }
-        val kept = filterBlocksInForeignClaims(
+        val keptChunks = filterBlocksInForeignClaims(
             originChunkPos = originChunk,
             triggererId = triggererUuid,
-            blocks = positions,
+            blocks = blocks.map { ChunkPosition(it.location.chunk) },
             isChunkClaimed = { SMPClaim.dataHandler.isChunkClaimed(it) },
             hasAccessOrIsOwner = { uuid, pos -> isOwnerOrHasAccess(uuid, pos) }
-        )
+        ).toSet()
+        // Capture the surviving blocks BEFORE clearing the live list.
+        val keptBlocks = blocks.filter { ChunkPosition(it.location.chunk) in keptChunks }
         blocks.clear()
-        val keptPositions = kept.toSet()
-        // Re-add only blocks whose chunk is in the kept set
-        blocks.addAll(blocks.toList().filter { keptPositions.contains(ChunkPosition(it.location.chunk)) })
+        blocks.addAll(keptBlocks)
     }
 
     private fun sendMessage(player: Player) {
@@ -432,13 +446,12 @@ internal fun shouldCancelClaimEvent(
     // the config can disable it entirely.
     val effectiveBypass = permissionBypassEnabled && bypasses
 
-    // Owner-triggered explosions: only suppress the general owner-or-member
-    // protection gate when own-claim-explosion is enabled AND the event is
-    // actually an explosion. Non-explosion events still use the normal
-    // owner-or-member gate (backwards-compatible).
-    val ownerBlocked = ownerOrMember && isExplosionEvent && !ownerExplosionBypassEnabled
+    // Owner-or-member gate: for explosion events it only applies when
+    // own-claim-explosions are enabled, so the config switch is observable.
+    // Non-explosion events keep the normal owner-or-member gate.
+    val ownerAllowed = ownerOrMember && (!isExplosionEvent || ownerExplosionBypassEnabled)
 
-    return !(!chunkClaimed || alreadyCancelled || flagAllows || effectiveBypass || ownerBlocked || ownerOrMember)
+    return !(!chunkClaimed || alreadyCancelled || flagAllows || effectiveBypass || ownerAllowed)
 }
 
 /**

@@ -117,14 +117,25 @@ class ListenerLogicTest {
         ))
     }
 
-    /** Even with own-claim-explosion disabled, owners/members are still
-     *  protected by the ownerOrMember gate — they may act in their claim. */
+    /** With own-claim-explosions disabled, even owners/members get their
+     *  explosions cancelled in claims — the config switch must be observable. */
     @Test
-    fun `owner-triggered explosion in own chunk always passes when ownerOrMember is true`() {
-        assertFalse(cancel(
+    fun `owner-triggered explosion is cancelled when own-claim is false`() {
+        assertTrue(cancel(
             chunkClaimed = true, flagAllows = false,
             bypasses = false, ownerOrMember = true,
             ownerExplosionBypassEnabled = false, isExplosionEvent = true
+        ))
+    }
+
+    /** Non-explosion events keep the normal owner-or-member gate, even with
+     *  own-claim-explosions disabled. */
+    @Test
+    fun `non-explosion events keep the owner gate when own-claim is false`() {
+        assertFalse(cancel(
+            chunkClaimed = true, flagAllows = false,
+            bypasses = false, ownerOrMember = true,
+            ownerExplosionBypassEnabled = false, isExplosionEvent = false
         ))
     }
 
